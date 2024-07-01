@@ -9,6 +9,7 @@ int main()
     {
         BeginDrawing();
         ClearBackground(RAYWHITE);
+        DrawText("Hello World!", 10, 10, 20, GRAY);
         EndDrawing();
     }
 
