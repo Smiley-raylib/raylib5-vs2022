@@ -1,10 +1,11 @@
-#include "raylib.h"
-#include "Math.h"
+#include <raylib.h>
+#include <raymath.h>
 
 int main()
 {
     InitWindow(800, 800, "Game");
     SetTargetFPS(60);
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
