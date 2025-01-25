@@ -2,8 +2,15 @@
 #include <raymath.h>
 #include <vector>
 #include "Colors.h"
+#include "Bullet.h"
 
 constexpr float SCREEN_SIZE = 800.0f;
+constexpr float RADIUS_PLAYER = 25.0f;
+
+constexpr float WORLD_MIN = -2500.0f;
+constexpr float WORLD_MAX =  2500.0f;
+
+constexpr Rectangle WORLD_REC{ WORLD_MIN, WORLD_MIN, WORLD_MAX * 2.0f, WORLD_MAX * 2.0f };
 
 //struct Rigidbody
 //{
@@ -75,19 +82,27 @@ struct Player
 {
     Vector2 pos = Vector2Zeros;
     Vector2 vel = Vector2Zeros;
-    Vector2 acc = Vector2Zeros;
     float moveSpeed = 0.0f;
 
     // Only support linear motiton. Player aims at the cursor, but doesn't rotate!
     //float turnSpeed = 0.0f;
     //float rotation = 0.0f;
+
+    // Just change velocity based on some value, don't store acceleration cause it'll be confusing whether its supposed to be reset every frame
+    //Vector2 acc = Vector2Zeros;
 };
 
 struct Projectile
 {
     Vector2 pos = Vector2Zeros;
     Vector2 vel = Vector2Zeros;
-    Vector2 acc = Vector2Zeros;
+};
+
+struct Projectiles
+{
+    std::vector<Projectile> rifle;
+    std::vector<Projectile> shotgun;
+    std::vector<Projectile> grenade;
 };
 
 // TODO -- Randomply spawn circles & render them to test camera logic
@@ -117,12 +132,11 @@ int main()
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
-    Projectile bullet;
-    bullet.pos = player.pos;
-    bullet.vel = Vector2Zeros;
+    Projectiles projectiles;
 
-    //std::vector<Vector2> projectiles;
-    //projectiles.reserve(1024);
+
+    float bulletCooldownCurrent = 0.0f;
+    const float bulletCooldownTotal = 0.5f;
 
     while (!WindowShouldClose())
     {
@@ -148,27 +162,54 @@ int main()
         moveDir = Vector2Normalize(moveDir);
         player.vel = moveDir * player.moveSpeed;
 
-        player.vel += player.acc * dt;
+        //player.vel += player.acc * dt;
         player.pos += player.vel * dt;
 
         camera.target = player.pos;
 
         Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), camera);
 
-        if (IsKeyPressed(KEY_SPACE))
+        bulletCooldownCurrent += dt;
+        if (bulletCooldownCurrent >= bulletCooldownTotal)
         {
-            Vector2 mouseDirection = Vector2Normalize(mouse - player.pos);
-            bullet.pos = player.pos;
-            bullet.vel = mouseDirection * 250.0f;
-        }
+            if (IsKeyDown(KEY_SPACE))
+            {
+                bulletCooldownCurrent = 0.0f;
 
-        bullet.pos += bullet.vel * dt;
+                Vector2 mouseDirection = Vector2Normalize(mouse - player.pos);
+
+                Projectile pRifle;
+                pRifle.pos = player.pos + mouseDirection * (RADIUS_PLAYER + RADIUS_RIFLE);
+                pRifle.vel = mouseDirection * 1000.0f;
+
+                projectiles.rifle.push_back(pRifle);
+            }
+        }
+        
+        // Bullet physics update
+        for (Projectile& p : projectiles.rifle)
+        {
+            p.pos += p.vel * dt;
+        }
+        
+        projectiles.rifle.erase(std::remove_if(projectiles.rifle.begin(), projectiles.rifle.end(), 
+            [](Projectile& p)
+            {
+                // Removed if true
+                return !CheckCollisionCircleRec(p.pos, RADIUS_RIFLE, WORLD_REC);
+            }),
+        projectiles.rifle.end());
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
         DrawCircleV(player.pos, 50, BLUE);
-        DrawCircleV(bullet.pos, 25, RED);
+
+        for (const Projectile& p : projectiles.rifle)
+        {
+            DrawCircleV(p.pos, RADIUS_RIFLE, RED);
+        }
+
         for (int i = 0; i < positions.size(); i++)
         {
             Vector2 pos = positions[i];
@@ -179,6 +220,7 @@ int main()
         // Since everything is relative to the camera, just use world-space UI!
         //DrawText(TextFormat("mx: %f my: %f", mouse.x, mouse.y), player.pos.x, player.pos.y - 50.0f, 20, BLUE);
         EndMode2D();
+        DrawText(TextFormat("Bullet count: %i", projectiles.rifle.size()), 10, 10, 20, RED);
         EndDrawing();
     }
 
