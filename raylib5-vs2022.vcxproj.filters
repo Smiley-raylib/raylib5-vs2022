@@ -23,7 +23,22 @@
     <ClInclude Include="src\Colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Bullet.h">
+    <ClInclude Include="src\Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MathExt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Weapons.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Projectiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Steering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
