@@ -56,6 +56,8 @@ int main()
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubble Arena");
     SetTargetFPS(60);
 
+    Texture2D bubble = LoadTexture("./assets/bubble.png");
+
     Map map;
     map.obstacles.resize(1024);
     for (Obstacle& o : map.obstacles)
@@ -136,7 +138,7 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
-        DrawCircleV(player.pos, RADIUS_PLAYER, BLUE);
+        DrawTextureV(bubble, player.pos, WHITE);
 
         for (const Projectile& p : projectiles.rifle)
         {
@@ -171,6 +173,7 @@ int main()
         EndDrawing();
     }
 
+    UnloadTexture(bubble);
     CloseWindow();
     return 0;
 }
