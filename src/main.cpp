@@ -5,15 +5,15 @@
 
 constexpr float SCREEN_SIZE = 800.0f;
 
-struct Rigidbody
-{
-    Vector2 pos = Vector2Zeros;
-    Vector2 vel = Vector2Zeros;
-    Vector2 acc = Vector2Zeros;
-
-    Vector2 dir = Vector2UnitX; // right
-    float angularSpeed = 0.0f;  // radians
-};
+//struct Rigidbody
+//{
+//    Vector2 pos = Vector2Zeros;
+//    Vector2 vel = Vector2Zeros;
+//    Vector2 acc = Vector2Zeros;
+//
+//    Vector2 dir = Vector2UnitX; // right
+//    float angularSpeed = 0.0f;  // radians
+//};
 
 RMAPI inline float Random(float min, float max)
 {
@@ -54,13 +54,13 @@ RMAPI Vector2 RotateTowards(Vector2 from, Vector2 to, float maxRadians)
     return Vector2Rotate(from, fminf(deltaRadians, maxRadians) * Sign(Vector2Cross(from, to)));
 }
 
-// Kinematic physics update
-void Update(Rigidbody& rb, float dt)
-{
-    rb.vel = rb.vel + rb.acc * dt;
-    rb.pos = rb.pos + rb.vel * dt + rb.acc * dt * dt * 0.5f;
-    rb.dir = RotateTowards(rb.dir, Vector2Normalize(rb.vel), rb.angularSpeed * dt);
-}
+// Player needs custom update. Maybe use this for AI? Remember to make whatever I need on a case-by-case basis, don't force all entities to follow common physics logic
+//void Update(Rigidbody& rb, float dt)
+//{
+//    rb.vel = rb.vel + rb.acc * dt;
+//    rb.pos = rb.pos + rb.vel * dt;
+//    rb.dir = RotateTowards(rb.dir, Vector2Normalize(rb.vel), rb.angularSpeed * dt);
+//}
 
 inline Vector2 Seek(Vector2 target, Vector2 seekerPosition, Vector2 seekerVelocity, float speed)
 {
@@ -70,6 +70,25 @@ inline Vector2 Seek(Vector2 target, Vector2 seekerPosition, Vector2 seekerVeloci
     // Apply difference as an acceleration
     return desiredVelocity - seekerVelocity;
 }
+
+struct Player
+{
+    Vector2 pos = Vector2Zeros;
+    Vector2 vel = Vector2Zeros;
+    Vector2 acc = Vector2Zeros;
+    float moveSpeed = 0.0f;
+
+    // Only support linear motiton. Player aims at the cursor, but doesn't rotate!
+    //float turnSpeed = 0.0f;
+    //float rotation = 0.0f;
+};
+
+struct Projectile
+{
+    Vector2 pos = Vector2Zeros;
+    Vector2 vel = Vector2Zeros;
+    Vector2 acc = Vector2Zeros;
+};
 
 // TODO -- Randomply spawn circles & render them to test camera logic
 int main()
@@ -88,34 +107,78 @@ int main()
         colors[i] = ballColors[rand() % ballColors.size()];
     }
 
-    Camera2D cam;
+    Player player;
+    player.pos = Vector2Ones * SCREEN_SIZE * 0.5f;
+    player.moveSpeed = SCREEN_SIZE * 0.5f;
 
-    Rigidbody rbPlayer;
-    rbPlayer.pos = Vector2Ones * SCREEN_SIZE * 0.5f;
+    Camera2D camera;
+    camera.target = player.pos;
+    camera.offset = Vector2Ones * SCREEN_SIZE * 0.5f;
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
+
+    Projectile bullet;
+    bullet.pos = player.pos;
+    bullet.vel = Vector2Zeros;
+
+    //std::vector<Vector2> projectiles;
+    //projectiles.reserve(1024);
 
     while (!WindowShouldClose())
     {
         float dt = GetFrameTime();
-        Vector2 mouseDirection = Vector2Normalize(GetMousePosition() - rbPlayer.pos);
-        
-        // Agario uses linear seek
-        //rbPlayer.pos += mouseDirection * 400.0f * dt;
 
-        // Should I use force-seek to make Bubblio different!?
-        rbPlayer.acc = Seek(GetMousePosition(), rbPlayer.pos, rbPlayer.vel, 1000.0f);
-        Update(rbPlayer, dt);
+        Vector2 moveDir = Vector2Zeros;
+        if (IsKeyDown(KEY_W))
+        {
+            moveDir -= Vector2UnitY;
+        }
+        if (IsKeyDown(KEY_S))
+        {
+            moveDir += Vector2UnitY;
+        }
+        if (IsKeyDown(KEY_A))
+        {
+            moveDir -= Vector2UnitX;
+        }
+        if (IsKeyDown(KEY_D))
+        {
+            moveDir += Vector2UnitX;
+        }
+        moveDir = Vector2Normalize(moveDir);
+        player.vel = moveDir * player.moveSpeed;
 
+        player.vel += player.acc * dt;
+        player.pos += player.vel * dt;
 
+        camera.target = player.pos;
+
+        Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), camera);
+
+        if (IsKeyPressed(KEY_SPACE))
+        {
+            Vector2 mouseDirection = Vector2Normalize(mouse - player.pos);
+            bullet.pos = player.pos;
+            bullet.vel = mouseDirection * 250.0f;
+        }
+
+        bullet.pos += bullet.vel * dt;
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        DrawCircleV(rbPlayer.pos, 50, BLUE);
+        BeginMode2D(camera);
+        DrawCircleV(player.pos, 50, BLUE);
+        DrawCircleV(bullet.pos, 25, RED);
         for (int i = 0; i < positions.size(); i++)
         {
             Vector2 pos = positions[i];
             Color col = colors[i];
             DrawCircleV(pos, 10.0f, col);
         }
+
+        // Since everything is relative to the camera, just use world-space UI!
+        //DrawText(TextFormat("mx: %f my: %f", mouse.x, mouse.y), player.pos.x, player.pos.y - 50.0f, 20, BLUE);
+        EndMode2D();
         EndDrawing();
     }
 
