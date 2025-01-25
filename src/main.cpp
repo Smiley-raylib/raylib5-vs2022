@@ -5,6 +5,8 @@
 #include "Bullet.h"
 
 constexpr float SCREEN_SIZE = 800.0f;
+
+constexpr float RADIUS_BALL = 10.0f;
 constexpr float RADIUS_PLAYER = 25.0f;
 
 constexpr float WORLD_MIN = -2500.0f;
@@ -96,6 +98,7 @@ struct Projectile
 {
     Vector2 pos = Vector2Zeros;
     Vector2 vel = Vector2Zeros;
+    bool destroy = false;
 };
 
 struct Projectiles
@@ -105,21 +108,25 @@ struct Projectiles
     std::vector<Projectile> grenade;
 };
 
+// Test object
+struct Ball
+{
+    Vector2 pos = Vector2Zeros;
+    Color color = BLACK;
+};
+
 // TODO -- Randomply spawn circles & render them to test camera logic
 int main()
 {
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubblio");
     SetTargetFPS(60);
 
-    std::vector<Vector2> positions;
-    std::vector<Color> colors;
-    positions.resize(128);
-    colors.resize(128);
-    for (int i = 0; i < positions.size(); i++)
+    std::vector<Ball> balls(128);
+    for (Ball& ball : balls)
     {
-        positions[i].x = Random(-2000.0f, 2000.0f);
-        positions[i].y = Random(-2000.0f, 2000.0f);
-        colors[i] = ballColors[rand() % ballColors.size()];
+        ball.pos.x = Random(WORLD_MIN, WORLD_MAX);
+        ball.pos.y = Random(WORLD_MIN, WORLD_MAX);
+        ball.color = COLORS[rand() % COLORS.size()];
     }
 
     Player player;
@@ -133,7 +140,9 @@ int main()
     camera.zoom = 1.0f;
 
     Projectiles projectiles;
-
+    projectiles.rifle.reserve(128);
+    projectiles.shotgun.reserve(128);
+    projectiles.grenade.reserve(128);
 
     float bulletCooldownCurrent = 0.0f;
     const float bulletCooldownTotal = 0.5f;
@@ -190,37 +199,42 @@ int main()
         for (Projectile& p : projectiles.rifle)
         {
             p.pos += p.vel * dt;
+
+            for (const Ball& b : balls)
+            {
+                p.destroy |= CheckCollisionCircles(p.pos, RADIUS_RIFLE, b.pos, RADIUS_BALL);
+            }
         }
         
         projectiles.rifle.erase(std::remove_if(projectiles.rifle.begin(), projectiles.rifle.end(), 
             [](Projectile& p)
             {
                 // Removed if true
-                return !CheckCollisionCircleRec(p.pos, RADIUS_RIFLE, WORLD_REC);
+                p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_RIFLE, WORLD_REC);
+                return p.destroy;
             }),
         projectiles.rifle.end());
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
-        DrawCircleV(player.pos, 50, BLUE);
+        DrawCircleV(player.pos, RADIUS_PLAYER, BLUE);
 
         for (const Projectile& p : projectiles.rifle)
         {
             DrawCircleV(p.pos, RADIUS_RIFLE, RED);
         }
 
-        for (int i = 0; i < positions.size(); i++)
+        for (const Ball& b : balls)
         {
-            Vector2 pos = positions[i];
-            Color col = colors[i];
-            DrawCircleV(pos, 10.0f, col);
+            DrawCircleV(b.pos, RADIUS_BALL, b.color);
         }
 
         // Since everything is relative to the camera, just use world-space UI!
         //DrawText(TextFormat("mx: %f my: %f", mouse.x, mouse.y), player.pos.x, player.pos.y - 50.0f, 20, BLUE);
         EndMode2D();
-        DrawText(TextFormat("Bullet count: %i", projectiles.rifle.size()), 10, 10, 20, RED);
+        DrawFPS(10, 10);
+        DrawText(TextFormat("Bullet count: %i", projectiles.rifle.size()), 10, 30, 20, RED);
         EndDrawing();
     }
 

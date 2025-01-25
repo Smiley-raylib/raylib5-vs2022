@@ -2,7 +2,7 @@
 #include <raylib.h>
 #include <array>
 
-static std::array<Color, 21> ballColors =
+static std::array<Color, 21> COLORS =
 {
 	LIGHTGRAY,
 	GRAY,
