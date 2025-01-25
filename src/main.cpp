@@ -5,8 +5,6 @@
 #include "Timer.h"
 #include "Systems.h"
 
-constexpr Rectangle WORLD_REC{ WORLD_MIN, WORLD_MIN, WORLD_MAX * 2.0f, WORLD_MAX * 2.0f };
-
 struct Player
 {
     Vector2 pos = Vector2Zeros;
@@ -15,13 +13,6 @@ struct Player
 
     int weaponType = RIFLE;
     Timer shootTimer;
-};
-
-// Test object
-struct Ball
-{
-    Vector2 pos = Vector2Zeros;
-    Color color = BLACK;
 };
 
 void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& projectiles, int type)
@@ -65,12 +56,14 @@ int main()
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubble Arena");
     SetTargetFPS(60);
 
-    std::vector<Ball> balls(128);
-    for (Ball& ball : balls)
+    Map map;
+    map.obstacles.resize(1024);
+    for (Obstacle& o : map.obstacles)
     {
-        ball.pos.x = Random(WORLD_MIN, WORLD_MAX);
-        ball.pos.y = Random(WORLD_MIN, WORLD_MAX);
-        ball.color = COLORS[rand() % COLORS.size()];
+        o.pos.x = Random(WORLD_MIN, WORLD_MAX);
+        o.pos.y = Random(WORLD_MIN, WORLD_MAX);
+        o.radius = Random(10.0f, 25.0f);
+        o.color = COLORS[rand() % COLORS.size()];
     }
 
     Player player;
@@ -137,63 +130,8 @@ int main()
             }
         }
         
-        // Bullet physics update
-        for (Projectile& p : projectiles.rifle)
-        {
-            p.pos += p.vel * dt;
-
-            for (const Ball& b : balls)
-            {
-                p.destroy |= CheckCollisionCircles(p.pos, RADIUS_RIFLE, b.pos, RADIUS_BALL);
-            }
-        }
-
-        for (Projectile& p : projectiles.shotgun)
-        {
-            p.pos += p.vel * dt;
-        }
-
-        for (Projectile& p : projectiles.machineGun)
-        {
-            p.pos += p.vel * dt;
-        }
-
-        for (Projectile& p : projectiles.akimbo)
-        {
-            p.pos += p.vel * dt;
-        }
-        
-        projectiles.rifle.erase(std::remove_if(projectiles.rifle.begin(), projectiles.rifle.end(), 
-            [](Projectile& p)
-            {
-                p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_RIFLE, WORLD_REC);
-                return p.destroy;
-            }),
-        projectiles.rifle.end());
-
-        projectiles.shotgun.erase(std::remove_if(projectiles.shotgun.begin(), projectiles.shotgun.end(),
-            [](Projectile& p)
-            {
-                p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_SHOTGUN, WORLD_REC);
-                return p.destroy;
-            }),
-        projectiles.shotgun.end());
-
-        projectiles.machineGun.erase(std::remove_if(projectiles.machineGun.begin(), projectiles.machineGun.end(),
-            [](Projectile& p)
-            {
-                p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_MACHINE_GUN, WORLD_REC);
-                return p.destroy;
-            }),
-        projectiles.machineGun.end());
-
-        projectiles.akimbo.erase(std::remove_if(projectiles.akimbo.begin(), projectiles.akimbo.end(),
-            [](Projectile& p)
-            {
-                p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_AKIMBO, WORLD_REC);
-                return p.destroy;
-            }),
-        projectiles.akimbo.end());
+        UpdateProjectiles(projectiles, map, dt);
+        PruneProjectiles(projectiles);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -220,9 +158,9 @@ int main()
             DrawCircleV(p.pos, RADIUS_AKIMBO, ORANGE);
         }
 
-        for (const Ball& b : balls)
+        for (const Obstacle& o : map.obstacles)
         {
-            DrawCircleV(b.pos, RADIUS_BALL, b.color);
+            DrawCircleV(o.pos, o.radius, o.color);
         }
 
         // Since everything is relative to the camera, just use world-space UI!

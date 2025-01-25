@@ -16,3 +16,4 @@ struct Projectiles
     std::vector<Projectile> machineGun;
     std::vector<Projectile> akimbo;
 };
+
