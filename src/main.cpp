@@ -1,5 +1,7 @@
 #include <raylib.h>
 #include <raymath.h>
+#include <vector>
+#include "Colors.h"
 
 constexpr float SCREEN_SIZE = 800.0f;
 
@@ -12,6 +14,11 @@ struct Rigidbody
     Vector2 dir = Vector2UnitX; // right
     float angularSpeed = 0.0f;  // radians
 };
+
+RMAPI inline float Random(float min, float max)
+{
+    return min + (rand() / ((float)RAND_MAX / (max - min)));
+}
 
 RMAPI float Sign(float value)
 {
@@ -64,10 +71,24 @@ inline Vector2 Seek(Vector2 target, Vector2 seekerPosition, Vector2 seekerVeloci
     return desiredVelocity - seekerVelocity;
 }
 
+// TODO -- Randomply spawn circles & render them to test camera logic
 int main()
 {
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubblio");
     SetTargetFPS(60);
+
+    std::vector<Vector2> positions;
+    std::vector<Color> colors;
+    positions.resize(128);
+    colors.resize(128);
+    for (int i = 0; i < positions.size(); i++)
+    {
+        positions[i].x = Random(-2000.0f, 2000.0f);
+        positions[i].y = Random(-2000.0f, 2000.0f);
+        colors[i] = ballColors[rand() % ballColors.size()];
+    }
+
+    Camera2D cam;
 
     Rigidbody rbPlayer;
     rbPlayer.pos = Vector2Ones * SCREEN_SIZE * 0.5f;
@@ -84,9 +105,17 @@ int main()
         rbPlayer.acc = Seek(GetMousePosition(), rbPlayer.pos, rbPlayer.vel, 1000.0f);
         Update(rbPlayer, dt);
 
+
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawCircleV(rbPlayer.pos, 50, BLUE);
+        for (int i = 0; i < positions.size(); i++)
+        {
+            Vector2 pos = positions[i];
+            Color col = colors[i];
+            DrawCircleV(pos, 10.0f, col);
+        }
         EndDrawing();
     }
 
