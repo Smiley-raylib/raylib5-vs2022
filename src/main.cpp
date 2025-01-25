@@ -3,6 +3,7 @@
 #include "Weapons.h"
 #include "Steering.h"
 #include "Timer.h"
+#include "Systems.h"
 
 constexpr Rectangle WORLD_REC{ WORLD_MIN, WORLD_MIN, WORLD_MAX * 2.0f, WORLD_MAX * 2.0f };
 
@@ -12,7 +13,7 @@ struct Player
     Vector2 vel = Vector2Zeros;
     float moveSpeed = 0.0f;
 
-    WeaponType weaponType = RIFLE;
+    int weaponType = RIFLE;
     Timer shootTimer;
 };
 
@@ -23,9 +24,45 @@ struct Ball
     Color color = BLACK;
 };
 
+void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& projectiles, int type)
+{
+    switch (type)
+    {
+        case RIFLE:
+        {
+            Projectile rifle = ShootRifle(position, radius, direction);
+            projectiles.rifle.push_back(rifle);
+        }
+        break;
+
+        case SHOTGUN:
+        {
+            std::array<Projectile, 3> shotgun = ShootShotgun(position, radius, direction);
+            for (Projectile& p : shotgun)
+                projectiles.shotgun.push_back(p);
+        }
+        break;
+
+        case MACHINE_GUN:
+        {
+            Projectile machine = ShootMachineGun(position, radius, direction);
+            projectiles.machineGun.push_back(machine);
+        }
+        break;
+
+        case AKIMBO:
+        {
+            std::array<Projectile, 2> akimbo = ShootAkimbo(position, radius, direction);
+            for (Projectile& p : akimbo)
+                projectiles.akimbo.push_back(p);
+        }
+        break;
+    }
+}
+
 int main()
 {
-    InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubblio");
+    InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubble Arena");
     SetTargetFPS(60);
 
     std::vector<Ball> balls(128);
@@ -52,11 +89,13 @@ int main()
     Projectiles projectiles;
     projectiles.rifle.reserve(128);
     projectiles.shotgun.reserve(128);
-    projectiles.grenade.reserve(128);
+    projectiles.machineGun.reserve(128);
+    projectiles.akimbo.reserve(128);
 
     while (!WindowShouldClose())
     {
-        float dt = GetFrameTime();
+        const float dt = GetFrameTime();
+        const Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), camera);
 
         Vector2 moveDir = Vector2Zeros;
         if (IsKeyDown(KEY_W))
@@ -75,43 +114,26 @@ int main()
         {
             moveDir += Vector2UnitX;
         }
+
         moveDir = Vector2Normalize(moveDir);
         player.vel = moveDir * player.moveSpeed;
-
-        //player.vel += player.acc * dt;
         player.pos += player.vel * dt;
-
         camera.target = player.pos;
 
-        Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), camera);
+        if (IsKeyPressed(KEY_LEFT_SHIFT))
+        {
+            ++player.weaponType %= WEAPON_COUNT;
+            player.shootTimer.total = WeaponCooldown(player.weaponType);
+        }
 
         Tick(player.shootTimer, dt);
         if (Expired(player.shootTimer))
         {
             if (IsKeyDown(KEY_SPACE))
             {
+                Vector2 mouseDirection = Vector2Normalize(mouse - player.pos);
                 Reset(player.shootTimer);
-
-                switch (player.weaponType)
-                {
-                case RIFLE:
-                {
-                    Projectile rifle = ShootRifle(player.pos, RADIUS_PLAYER, Vector2Normalize(mouse - player.pos));
-                    projectiles.rifle.push_back(rifle);
-                }
-                break;
-
-                case SHOTGUN:
-                {
-                    std::array<Projectile, 3> shotgun = ShootShotgun(player.pos, RADIUS_PLAYER, Vector2Normalize(mouse - player.pos));
-                    for (Projectile& p : shotgun)
-                        projectiles.shotgun.push_back(p);
-                }
-                break;
-
-                case MACHINE_GUN:
-                    break;
-                }
+                Shoot(player.pos, mouseDirection, RADIUS_PLAYER, projectiles, player.weaponType);
             }
         }
         
@@ -127,6 +149,16 @@ int main()
         }
 
         for (Projectile& p : projectiles.shotgun)
+        {
+            p.pos += p.vel * dt;
+        }
+
+        for (Projectile& p : projectiles.machineGun)
+        {
+            p.pos += p.vel * dt;
+        }
+
+        for (Projectile& p : projectiles.akimbo)
         {
             p.pos += p.vel * dt;
         }
@@ -147,6 +179,22 @@ int main()
             }),
         projectiles.shotgun.end());
 
+        projectiles.machineGun.erase(std::remove_if(projectiles.machineGun.begin(), projectiles.machineGun.end(),
+            [](Projectile& p)
+            {
+                p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_MACHINE_GUN, WORLD_REC);
+                return p.destroy;
+            }),
+        projectiles.machineGun.end());
+
+        projectiles.akimbo.erase(std::remove_if(projectiles.akimbo.begin(), projectiles.akimbo.end(),
+            [](Projectile& p)
+            {
+                p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_AKIMBO, WORLD_REC);
+                return p.destroy;
+            }),
+        projectiles.akimbo.end());
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
@@ -160,6 +208,16 @@ int main()
         for (const Projectile& p : projectiles.shotgun)
         {
             DrawCircleV(p.pos, RADIUS_SHOTGUN, GREEN);
+        }
+
+        for (const Projectile& p : projectiles.machineGun)
+        {
+            DrawCircleV(p.pos, RADIUS_MACHINE_GUN, BLUE);
+        }
+
+        for (const Projectile& p : projectiles.akimbo)
+        {
+            DrawCircleV(p.pos, RADIUS_AKIMBO, ORANGE);
         }
 
         for (const Ball& b : balls)

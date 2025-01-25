@@ -13,5 +13,6 @@ struct Projectiles
 {
     std::vector<Projectile> rifle;
     std::vector<Projectile> shotgun;
-    std::vector<Projectile> grenade;
+    std::vector<Projectile> machineGun;
+    std::vector<Projectile> akimbo;
 };

@@ -16,9 +16,11 @@
   <ItemGroup>
     <ClInclude Include="src\Constants.h" />
     <ClInclude Include="src\Colors.h" />
+    <ClInclude Include="src\Enemies.h" />
     <ClInclude Include="src\MathExt.h" />
     <ClInclude Include="src\Projectiles.h" />
     <ClInclude Include="src\Steering.h" />
+    <ClInclude Include="src\Systems.h" />
     <ClInclude Include="src\Timer.h" />
     <ClInclude Include="src\Weapons.h" />
   </ItemGroup>
