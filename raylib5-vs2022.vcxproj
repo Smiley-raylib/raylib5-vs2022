@@ -18,6 +18,7 @@
     <ClInclude Include="src\Assets.h" />
     <ClInclude Include="src\Constants.h" />
     <ClInclude Include="src\Enemies.h" />
+    <ClInclude Include="src\Entities.h" />
     <ClInclude Include="src\Map.h" />
     <ClInclude Include="src\MathExt.h" />
     <ClInclude Include="src\Steering.h" />

@@ -1,5 +1,6 @@
 #pragma once
 #include "Map.h"
+#include "Entities.h"
 
 constexpr Rectangle WORLD_REC{ WORLD_MIN, WORLD_MIN, WORLD_MAX * 2.0f, WORLD_MAX * 2.0f };
 
@@ -74,6 +75,18 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
         {
             p.destroy |= CheckCollisionCircles(p.pos, RADIUS_ROCKET, o.pos, o.radius);
             p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_ROCKET, WORLD_REC);
+        }
+    }
+}
+
+void ResolveMapCollisions(Player& player, const Map& map)
+{
+    for (const Obstacle& o : map.obstacles)
+    {
+        if (CheckCollisionCircles(player.pos, RADIUS_PLAYER, o.pos, o.radius))
+        {
+            Vector2 mtv = Vector2Normalize(player.pos - o.pos) * ((RADIUS_PLAYER + o.radius) - Vector2Distance(player.pos, o.pos));
+            player.pos += mtv;
         }
     }
 }

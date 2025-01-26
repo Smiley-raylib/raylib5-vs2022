@@ -1,63 +1,6 @@
 #include "Assets.h"
 #include "Constants.h"
-
-#include "Weapons.h"
 #include "Systems.h"
-#include "Steering.h"
-#include "Timer.h"
-
-struct Player
-{
-    Vector2 pos = Vector2Zeros;
-    Vector2 vel = Vector2Zeros;
-    float moveSpeed = 0.0f;
-
-    int weaponType = RIFLE;
-    Timer shootTimer;
-};
-
-void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& projectiles, int type)
-{
-    switch (type)
-    {
-        case RIFLE:
-        {
-            Projectile rifle = ShootRifle(position, radius, direction);
-            projectiles.rifle.push_back(rifle);
-        }
-        break;
-
-        case SHOTGUN:
-        {
-            std::array<Projectile, 3> shotgun = ShootShotgun(position, radius, direction);
-            for (Projectile& p : shotgun)
-                projectiles.shotgun.push_back(p);
-        }
-        break;
-
-        case MACHINE_GUN:
-        {
-            Projectile machine = ShootMachineGun(position, radius, direction);
-            projectiles.machineGun.push_back(machine);
-        }
-        break;
-
-        case AKIMBO:
-        {
-            std::array<Projectile, 2> akimbo = ShootAkimbo(position, radius, direction);
-            for (Projectile& p : akimbo)
-                projectiles.akimbo.push_back(p);
-        }
-        break;
-
-        case ROCKET:
-        {
-            std::array<Projectile, 5> rocket = ShootRocket(position, radius, direction);
-            for (Projectile& p : rocket)
-                projectiles.rocket.push_back(p);
-        }
-    }
-}
 
 void DrawPlayer(Vector2 pos)
 {
@@ -117,7 +60,7 @@ int main()
     Player player;
     player.moveSpeed = SCREEN_SIZE;
 
-    player.weaponType = ROCKET;
+    player.weaponType = RIFLE;
     player.shootTimer.total = COOLDOWN_SHOTGUN;
 
     Camera2D camera;
@@ -160,6 +103,7 @@ int main()
         moveDir = Vector2Normalize(moveDir);
         player.vel = moveDir * player.moveSpeed;
         player.pos += player.vel * dt;
+        player.pos = Vector2Clamp(player.pos, Vector2Ones * WORLD_MIN, Vector2Ones * WORLD_MAX);
         camera.target = player.pos;
 
         if (IsKeyPressed(KEY_LEFT_SHIFT))
@@ -180,6 +124,7 @@ int main()
         
         UpdateProjectiles(projectiles, map, dt);
         PruneProjectiles(projectiles);
+        ResolveMapCollisions(player, map);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
