@@ -24,6 +24,7 @@
     <ClInclude Include="src\Steering.h" />
     <ClInclude Include="src\Systems.h" />
     <ClInclude Include="src\Timer.h" />
+    <ClInclude Include="src\Types.h" />
     <ClInclude Include="src\Weapons.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

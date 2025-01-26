@@ -7,6 +7,7 @@ constexpr float WORLD_MIN = -2500.0f;
 constexpr float WORLD_MAX = 2500.0f;
 
 constexpr float RADIUS_PLAYER = 25.0f;
+constexpr float RADIUS_ENEMY = 25.0f;
 
 constexpr float RADIUS_RIFLE = 20.0f;
 constexpr float RADIUS_SHOTGUN = 25.0f;

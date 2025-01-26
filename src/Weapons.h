@@ -4,23 +4,15 @@
 #include <array>
 #include <vector>
 #include "Assets.h"
+#include "Types.h"
 // *Must include raylib before raymath cause raylib defines VectorN*
-
-enum WeaponType : int
-{
-	RIFLE,
-	SHOTGUN,
-	MACHINE_GUN,
-	AKIMBO,
-	ROCKET,
-	WEAPON_COUNT
-};
 
 struct Projectile
 {
 	Vector2 pos = Vector2Zeros;
 	Vector2 vel = Vector2Zeros;
 	float time = 0.0f;
+	int team;
 	bool destroy = false;
 
 	Vector2 launchPos = Vector2Zeros;

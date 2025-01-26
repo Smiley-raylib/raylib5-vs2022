@@ -4,7 +4,7 @@
 
 constexpr Rectangle WORLD_REC{ WORLD_MIN, WORLD_MIN, WORLD_MAX * 2.0f, WORLD_MAX * 2.0f };
 
-void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
+void UpdateProjectiles(Player& player, Enemies& enemies, Projectiles& projectiles, const Map& map, float dt)
 {
     for (Projectile& p : projectiles.rifle)
     {
@@ -16,6 +16,23 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
         {
             p.destroy |= CheckCollisionCircles(p.pos, RADIUS_RIFLE, o.pos, o.radius);
             p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_RIFLE, WORLD_REC);
+        }
+
+        bool playerCollision = CheckCollisionCircles(player.pos, RADIUS_PLAYER, p.pos, RADIUS_RIFLE);
+        if (playerCollision && p.team == ENEMY)
+        {
+            p.destroy |= playerCollision;
+            player.health -= DAMAGE_RIFLE;
+        }
+
+        for (Enemy enemy : enemies.rifle)
+        {
+            bool enemyCollision = CheckCollisionCircles(enemy.pos, RADIUS_ENEMY, p.pos, RADIUS_RIFLE);
+            if (enemyCollision && p.team == PLAYER)
+            {
+                p.destroy |= enemyCollision;
+                enemy.health -= DAMAGE_RIFLE;
+            }
         }
     }
 

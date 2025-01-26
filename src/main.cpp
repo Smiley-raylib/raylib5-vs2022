@@ -63,6 +63,16 @@ int main()
     player.weaponType = RIFLE;
     player.shootTimer.total = COOLDOWN_SHOTGUN;
 
+    Enemies enemies;
+    enemies.rifle.resize(10);
+    float xStart =  + 250.0f;
+    for (int i = 0; i < enemies.rifle.size(); i++)
+    {
+        Enemy& enemy = enemies.rifle[i];
+        enemy.pos.x = WORLD_MIN + 250.0f + (i * 500.0f);
+        enemy.pos.y = WORLD_MAX - 250.0f;
+    }
+
     Camera2D camera;
     camera.target = player.pos;
     camera.offset = Vector2Ones * SCREEN_SIZE * 0.5f;
@@ -118,13 +128,14 @@ int main()
             if (IsKeyDown(KEY_SPACE))
             {
                 Reset(player.shootTimer);
-                Shoot(player.pos, mouseDirection, RADIUS_PLAYER, projectiles, player.weaponType);
+                Shoot(player.pos, mouseDirection, RADIUS_PLAYER, projectiles, player.weaponType, PLAYER);
             }
         }
         
-        UpdateProjectiles(projectiles, map, dt);
+        UpdateProjectiles(player, enemies, projectiles, map, dt);
         PruneProjectiles(projectiles);
         ResolveMapCollisions(player, map);
+        UpdateEnemies(enemies, player, dt);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -132,6 +143,12 @@ int main()
         DrawSceenEdges();
         DrawProjectiles(projectiles);
         DrawPlayer(player.pos);
+
+        for (const Enemy& enemy : enemies.rifle)
+        {
+            DrawCircleV(enemy.pos, RADIUS_ENEMY, COLOR_RIFLE);
+        }
+
         for (const Obstacle& o : map.obstacles)
         {
             DrawCircleV(o.pos, o.radius, o.color);
