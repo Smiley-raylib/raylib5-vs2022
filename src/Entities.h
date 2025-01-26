@@ -27,14 +27,17 @@ struct Enemy
     float health = 100.0f;
 };
 
-struct Enemies
-{
-    std::vector<Enemy> rifle;
-    std::vector<Enemy> shotgun;
-    std::vector<Enemy> machine;
-    std::vector<Enemy> akimbo;
-    std::vector<Enemy> rocket;
-};
+using Enemies = std::vector<Enemy>;
+
+// TODO - give enemies specific behaviour when I'm not high on magic mushrooms
+//struct Enemies
+//{
+//    std::vector<Enemy> rifle;
+//    std::vector<Enemy> shotgun;
+//    std::vector<Enemy> machine;
+//    std::vector<Enemy> akimbo;
+//    std::vector<Enemy> rocket;
+//};
 
 void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& projectiles, int type, int team)
 {
@@ -91,12 +94,21 @@ void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& proje
     }
 }
 
-void UpdateEnemies(Enemies& enemies, const Player& player, float dt)
+void UpdateEnemies(const Player& player, Enemies& enemies, Projectiles& projectiles, float dt)
 {
-    for (Enemy& enemy : enemies.rifle)
+    for (Enemy& enemy : enemies)
     {
         enemy.acc = Seek(player.pos, enemy.pos, enemy.vel, 500.0f);
         enemy.vel += enemy.acc * dt;
         enemy.pos += enemy.vel * dt;
+        enemy.pos = Vector2Clamp(enemy.pos, Vector2Ones * WORLD_MIN, Vector2Ones * WORLD_MAX);
+
+        Tick(enemy.shootTimer, dt);
+        if (Expired(enemy.shootTimer))
+        {
+            Vector2 playerDirection = Vector2Normalize(player.pos - enemy.pos);
+            Reset(enemy.shootTimer);
+            Shoot(enemy.pos, playerDirection, RADIUS_ENEMY, projectiles, enemy.weaponType, ENEMY);
+        }
     }
 }

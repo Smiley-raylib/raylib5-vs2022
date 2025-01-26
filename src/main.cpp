@@ -48,6 +48,13 @@ void DrawSceenEdges()
     DrawRectangleLinesEx(edges, 10.0f, DARKBLUE);
 }
 
+enum Screen
+{
+    GAME,
+    WIN,
+    LOSE
+};
+
 int main()
 {
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubble Arena");
@@ -64,13 +71,15 @@ int main()
     player.shootTimer.total = COOLDOWN_SHOTGUN;
 
     Enemies enemies;
-    enemies.rifle.resize(10);
+    enemies.resize(10);
     float xStart =  + 250.0f;
-    for (int i = 0; i < enemies.rifle.size(); i++)
+    for (int i = 0; i < enemies.size(); i++)
     {
-        Enemy& enemy = enemies.rifle[i];
+        Enemy& enemy = enemies[i];
         enemy.pos.x = WORLD_MIN + 250.0f + (i * 500.0f);
         enemy.pos.y = WORLD_MAX - 250.0f;
+        enemy.weaponType = rand() % WEAPON_COUNT;
+        enemy.shootTimer.total = WeaponCooldown(enemy.weaponType);
     }
 
     Camera2D camera;
@@ -85,6 +94,8 @@ int main()
     projectiles.machineGun.reserve(128);
     projectiles.akimbo.reserve(128);
     projectiles.rocket.reserve(128);
+
+    Screen screen = GAME;
 
     while (!WindowShouldClose())
     {
@@ -133,28 +144,53 @@ int main()
         }
         
         UpdateProjectiles(player, enemies, projectiles, map, dt);
+        UpdateEnemies(player, enemies, projectiles, dt);
         PruneProjectiles(projectiles);
-        ResolveMapCollisions(player, map);
-        UpdateEnemies(enemies, player, dt);
+        PruneEnemies(enemies);
+        ResolveMapCollisions(player, enemies, map);
+
+        if (player.health <= 0.0f)
+        {
+            screen = LOSE;
+        }
+        else if (enemies.empty())
+        {
+            screen = WIN;
+        }
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        BeginMode2D(camera);
-        DrawSceenEdges();
-        DrawProjectiles(projectiles);
-        DrawPlayer(player.pos);
 
-        for (const Enemy& enemy : enemies.rifle)
+        if (screen == GAME)
         {
-            DrawCircleV(enemy.pos, RADIUS_ENEMY, COLOR_RIFLE);
-        }
+            BeginMode2D(camera);
+            DrawSceenEdges();
+            DrawProjectiles(projectiles);
+            DrawPlayer(player.pos);
 
-        for (const Obstacle& o : map.obstacles)
+            for (const Enemy& enemy : enemies)
+            {
+                DrawCircleV(enemy.pos, RADIUS_ENEMY, WeaponColor(enemy.weaponType));
+            }
+
+            for (const Obstacle& o : map.obstacles)
+            {
+                DrawCircleV(o.pos, o.radius, o.color);
+            }
+            EndMode2D();
+        }
+        else if (screen == WIN)
         {
-            DrawCircleV(o.pos, o.radius, o.color);
+            const char* text = "YOU WIN :)";
+            int x = MeasureText(text, 32);
+            DrawText(text, SCREEN_SIZE * 0.5f - x * 0.5f, SCREEN_SIZE * 0.5, 32, GREEN);
         }
-
-        EndMode2D();
+        else if (screen == LOSE)
+        {
+            const char* text = "YOU LOSE :(";
+            int x = MeasureText(text, 32);
+            DrawText(text, SCREEN_SIZE * 0.5f - x * 0.5f, SCREEN_SIZE * 0.5, 32, RED);
+        }
         EndDrawing();
     }
 

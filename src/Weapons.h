@@ -102,27 +102,6 @@ inline std::array<Projectile, 5> ShootRocket(Vector2 shooterPosition, float shoo
 	return p;
 }
 
-inline float WeaponCooldown(int type)
-{
-	switch (type)
-	{
-	case RIFLE:
-		return COOLDOWN_RIFLE;
-
-	case SHOTGUN:
-		return COOLDOWN_SHOTGUN;
-
-	case MACHINE_GUN:
-		return COOLDOWN_MACHINE_GUN;
-
-	case AKIMBO:
-		return COOLDOWN_AKIMBO;
-
-	case ROCKET:
-		return COOLDOWN_ROCKET;
-	}
-}
-
 void DrawTexCircle(Texture2D tex, Vector2 pos, float radius, Color tint = WHITE)
 {
 	Rectangle src, dst;
@@ -153,4 +132,67 @@ void DrawAkimbo(Vector2 pos)
 void DrawRocket(Vector2 pos)
 {
 	DrawTexCircle(gTexBubble, pos, RADIUS_ROCKET, COLOR_ROCKET);
+}
+
+inline float WeaponCooldown(int type)
+{
+	switch (type)
+	{
+	case RIFLE:
+		return COOLDOWN_RIFLE;
+
+	case SHOTGUN:
+		return COOLDOWN_SHOTGUN;
+
+	case MACHINE_GUN:
+		return COOLDOWN_MACHINE_GUN;
+
+	case AKIMBO:
+		return COOLDOWN_AKIMBO;
+
+	case ROCKET:
+		return COOLDOWN_ROCKET;
+	}
+}
+
+inline float WeaponDamage(int type)
+{
+	switch (type)
+	{
+	case RIFLE:
+		return DAMAGE_RIFLE;
+
+	case SHOTGUN:
+		return DAMAGE_SHOTGUN;
+
+	case MACHINE_GUN:
+		return DAMAGE_MACHINE_GUN;
+
+	case AKIMBO:
+		return DAMAGE_AKIMBO;
+
+	case ROCKET:
+		return DAMAGE_ROCKET;
+	}
+}
+
+inline Color WeaponColor(int type)
+{
+	switch (type)
+	{
+	case RIFLE:
+		return COLOR_RIFLE;
+
+	case SHOTGUN:
+		return COLOR_SHOTGUN;
+
+	case MACHINE_GUN:
+		return COLOR_MACHINE_GUN;
+
+	case AKIMBO:
+		return COLOR_AKIMBO;
+
+	case ROCKET:
+		return COLOR_ROCKET;
+	}
 }

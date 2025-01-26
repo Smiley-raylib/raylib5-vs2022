@@ -25,7 +25,7 @@ void UpdateProjectiles(Player& player, Enemies& enemies, Projectiles& projectile
             player.health -= DAMAGE_RIFLE;
         }
 
-        for (Enemy enemy : enemies.rifle)
+        for (Enemy& enemy : enemies)
         {
             bool enemyCollision = CheckCollisionCircles(enemy.pos, RADIUS_ENEMY, p.pos, RADIUS_RIFLE);
             if (enemyCollision && p.team == PLAYER)
@@ -47,6 +47,23 @@ void UpdateProjectiles(Player& player, Enemies& enemies, Projectiles& projectile
             p.destroy |= CheckCollisionCircles(p.pos, RADIUS_SHOTGUN, o.pos, o.radius);
             p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_SHOTGUN, WORLD_REC);
         }
+
+        bool playerCollision = CheckCollisionCircles(player.pos, RADIUS_PLAYER, p.pos, RADIUS_SHOTGUN);
+        if (playerCollision && p.team == ENEMY)
+        {
+            p.destroy |= playerCollision;
+            player.health -= DAMAGE_SHOTGUN;
+        }
+
+        for (Enemy& enemy : enemies)
+        {
+            bool enemyCollision = CheckCollisionCircles(enemy.pos, RADIUS_ENEMY, p.pos, RADIUS_SHOTGUN);
+            if (enemyCollision && p.team == PLAYER)
+            {
+                p.destroy |= enemyCollision;
+                enemy.health -= DAMAGE_SHOTGUN;
+            }
+        }
     }
 
     for (Projectile& p : projectiles.machineGun)
@@ -60,6 +77,23 @@ void UpdateProjectiles(Player& player, Enemies& enemies, Projectiles& projectile
             p.destroy |= CheckCollisionCircles(p.pos, RADIUS_MACHINE_GUN, o.pos, o.radius);
             p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_MACHINE_GUN, WORLD_REC);
         }
+
+        bool playerCollision = CheckCollisionCircles(player.pos, RADIUS_PLAYER, p.pos, RADIUS_MACHINE_GUN);
+        if (playerCollision && p.team == ENEMY)
+        {
+            p.destroy |= playerCollision;
+            player.health -= DAMAGE_MACHINE_GUN;
+        }
+
+        for (Enemy& enemy : enemies)
+        {
+            bool enemyCollision = CheckCollisionCircles(enemy.pos, RADIUS_ENEMY, p.pos, RADIUS_MACHINE_GUN);
+            if (enemyCollision && p.team == PLAYER)
+            {
+                p.destroy |= enemyCollision;
+                enemy.health -= DAMAGE_MACHINE_GUN;
+            }
+        }
     }
 
     for (Projectile& p : projectiles.akimbo)
@@ -72,6 +106,23 @@ void UpdateProjectiles(Player& player, Enemies& enemies, Projectiles& projectile
         {
             p.destroy |= CheckCollisionCircles(p.pos, RADIUS_AKIMBO, o.pos, o.radius);
             p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_AKIMBO, WORLD_REC);
+        }
+
+        bool playerCollision = CheckCollisionCircles(player.pos, RADIUS_PLAYER, p.pos, RADIUS_AKIMBO);
+        if (playerCollision && p.team == ENEMY)
+        {
+            p.destroy |= playerCollision;
+            player.health -= DAMAGE_AKIMBO;
+        }
+
+        for (Enemy& enemy : enemies)
+        {
+            bool enemyCollision = CheckCollisionCircles(enemy.pos, RADIUS_ENEMY, p.pos, RADIUS_AKIMBO);
+            if (enemyCollision && p.team == PLAYER)
+            {
+                p.destroy |= enemyCollision;
+                enemy.health -= DAMAGE_AKIMBO;
+            }
         }
     }
 
@@ -93,10 +144,27 @@ void UpdateProjectiles(Player& player, Enemies& enemies, Projectiles& projectile
             p.destroy |= CheckCollisionCircles(p.pos, RADIUS_ROCKET, o.pos, o.radius);
             p.destroy |= !CheckCollisionCircleRec(p.pos, RADIUS_ROCKET, WORLD_REC);
         }
+
+        bool playerCollision = CheckCollisionCircles(player.pos, RADIUS_PLAYER, p.pos, RADIUS_ROCKET);
+        if (playerCollision && p.team == ENEMY)
+        {
+            p.destroy |= playerCollision;
+            player.health -= DAMAGE_ROCKET;
+        }
+
+        for (Enemy& enemy : enemies)
+        {
+            bool enemyCollision = CheckCollisionCircles(enemy.pos, RADIUS_ENEMY, p.pos, RADIUS_ROCKET);
+            if (enemyCollision && p.team == PLAYER)
+            {
+                p.destroy |= enemyCollision;
+                enemy.health -= DAMAGE_ROCKET;
+            }
+        }
     }
 }
 
-void ResolveMapCollisions(Player& player, const Map& map)
+void ResolveMapCollisions(Player& player, Enemies& enemies, const Map& map)
 {
     for (const Obstacle& o : map.obstacles)
     {
@@ -104,6 +172,15 @@ void ResolveMapCollisions(Player& player, const Map& map)
         {
             Vector2 mtv = Vector2Normalize(player.pos - o.pos) * ((RADIUS_PLAYER + o.radius) - Vector2Distance(player.pos, o.pos));
             player.pos += mtv;
+        }
+
+        for (Enemy& enemy : enemies)
+        {
+            if (CheckCollisionCircles(enemy.pos, RADIUS_ENEMY, o.pos, o.radius))
+            {
+                Vector2 mtv = Vector2Normalize(enemy.pos - o.pos) * ((RADIUS_ENEMY + o.radius) - Vector2Distance(enemy.pos, o.pos));
+                enemy.pos += mtv;
+            }
         }
     }
 }
@@ -124,6 +201,12 @@ void PruneProjectiles(Projectiles& projectiles)
 
     projectiles.rocket.erase(std::remove_if(projectiles.rocket.begin(), projectiles.rocket.end(),
         [](Projectile& p) { return p.destroy; }), projectiles.rocket.end());
+}
+
+void PruneEnemies(Enemies& enemies)
+{
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
+        [](Enemy& e) { return e.health <= 0.0f; }), enemies.end());
 }
 
 void DrawProjectiles(const Projectiles& projectiles)
