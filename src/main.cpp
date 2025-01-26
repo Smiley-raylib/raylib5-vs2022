@@ -64,6 +64,47 @@ void DrawPlayer(Vector2 pos)
     DrawTexCircle(gTexBubble, pos, RADIUS_PLAYER, BLUE);
 }
 
+void GenMap(Map& map)
+{
+    Obstacle top, bot, left, right;
+    Obstacle topLeft, topRight, botLeft, botRight;
+
+    top.pos = Vector2UnitY * 1000.0f;
+    bot.pos = Vector2UnitY * -1000.0f;
+    left.pos = Vector2UnitX * -1000.0f;
+    right.pos = Vector2UnitX * 1000.0f;
+
+    topLeft.pos = top.pos * 1.5f + left.pos * 1.5f;
+    topRight.pos = top.pos * 1.5f + right.pos * 1.5f;
+    botLeft.pos = bot.pos * 1.5f + left.pos * 1.5f;
+    botRight.pos = bot.pos * 1.5f + right.pos * 1.5f;
+
+    top.radius = bot.radius = left.radius = right.radius = 500.0f;
+    topLeft.radius = botRight.radius = botLeft.radius = botRight.radius = 500.0f;
+    top.color = bot.color = left.color = right.color = SKYBLUE;
+    topLeft.color = botRight.color = botLeft.color = botRight.color = SKYBLUE;
+
+    std::vector<Obstacle>& o = map.obstacles;
+    o.push_back(top);
+    o.push_back(bot);
+    o.push_back(left);
+    o.push_back(right);
+    o.push_back(topLeft);
+    o.push_back(topRight);
+    o.push_back(botLeft);
+    o.push_back(botRight);
+}
+
+void DrawSceenEdges()
+{
+    Rectangle edges;
+    edges.x = WORLD_MIN;
+    edges.y = WORLD_MIN;
+    edges.width = WORLD_MAX * 2.0f;
+    edges.height = WORLD_MAX * 2.0f;
+    DrawRectangleLinesEx(edges, 10.0f, DARKBLUE);
+}
+
 int main()
 {
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubble Arena");
@@ -71,17 +112,10 @@ int main()
     LoadAssets();
 
     Map map;
-    map.obstacles.resize(1024);
-    for (Obstacle& o : map.obstacles)
-    {
-        o.pos.x = Random(WORLD_MIN, WORLD_MAX);
-        o.pos.y = Random(WORLD_MIN, WORLD_MAX);
-        o.radius = Random(10.0f, 25.0f);
-        o.color = COLORS[rand() % COLORS.size()];
-    }
+    GenMap(map);
 
     Player player;
-    player.moveSpeed = SCREEN_SIZE * 0.5f;
+    player.moveSpeed = SCREEN_SIZE;
 
     player.weaponType = ROCKET;
     player.shootTimer.total = COOLDOWN_SHOTGUN;
@@ -150,6 +184,7 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
+        DrawSceenEdges();
         DrawProjectiles(projectiles);
         DrawPlayer(player.pos);
         for (const Obstacle& o : map.obstacles)
