@@ -68,7 +68,7 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
         t = powf(t, 2.0f);              // quadratic easing
 
         Vector2 perp{ -p.launchDir.y, p.launchDir.x };
-        p.pos += perp * cosf(p.time * 8.0f) * 25.0f * t;
+        p.pos += perp * cosf(p.time * 8.0f + p.phase) * 25.0f * t;
 
         for (const Obstacle& o : map.obstacles)
         {

@@ -12,7 +12,7 @@ constexpr float RADIUS_RIFLE = 10.0f;
 constexpr float RADIUS_SHOTGUN = 12.5f;
 constexpr float RADIUS_MACHINE_GUN = 5.0f;
 constexpr float RADIUS_AKIMBO = 5.0f;
-constexpr float RADIUS_ROCKET = 10.0f;
+constexpr float RADIUS_ROCKET = 20.0f;
 
 constexpr float COOLDOWN_RIFLE = 0.5f;
 constexpr float COOLDOWN_SHOTGUN = 0.75f;

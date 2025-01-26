@@ -52,8 +52,9 @@ void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& proje
 
         case ROCKET:
         {
-            Projectile rocket = ShootRocket(position, radius, direction);
-            projectiles.rocket.push_back(rocket);
+            std::array<Projectile, 5> rocket = ShootRocket(position, radius, direction);
+            for (Projectile& p : rocket)
+                projectiles.rocket.push_back(p);
         }
     }
 }
@@ -89,7 +90,7 @@ int main()
     camera.target = player.pos;
     camera.offset = Vector2Ones * SCREEN_SIZE * 0.5f;
     camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+    camera.zoom = 0.5f;
 
     Projectiles projectiles;
     projectiles.rifle.reserve(128);
@@ -146,8 +147,6 @@ int main()
         UpdateProjectiles(projectiles, map, dt);
         PruneProjectiles(projectiles);
 
-        
-
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
@@ -158,24 +157,7 @@ int main()
             DrawCircleV(o.pos, o.radius, o.color);
         }
 
-        const float spread = PI / 5.0f;
-        float angle = -spread * 2.0f;
-        float r = 100.0f;
-        for (int i = 0; i < 5; i++)
-        {
-
-            Vector2 dir = Vector2Rotate(mouseDirection * -1.0f, angle) * r;
-            DrawCircleV(player.pos + dir, 20.0f, RED);
-            angle += spread;
-        }
-
-        // Since everything is relative to the camera, just use world-space UI!
-        //DrawText(TextFormat("mx: %f my: %f", mouse.x, mouse.y), player.pos.x, player.pos.y - 50.0f, 20, BLUE);
         EndMode2D();
-        DrawFPS(10, 10);
-        //projectiles.rifle.size();
-        //int  = projectiles.rifle.size() + projectiles.rifle.size() + projectiles.rifle.size() + projectiles.rifle.size() + projectiles.rifle.size();
-        DrawText(TextFormat("Bullet count: %i", projectiles.rifle.size()), 10, 30, 20, RED);
         EndDrawing();
     }
 
