@@ -49,6 +49,12 @@ void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& proje
                 projectiles.akimbo.push_back(p);
         }
         break;
+
+        case ROCKET:
+        {
+            RocketProjectile rocket = ShootRocket(position, radius, direction);
+            projectiles.rocket.push_back(rocket);
+        }
     }
 }
 
@@ -77,14 +83,14 @@ int main()
     player.pos = Vector2Ones * SCREEN_SIZE * 0.5f;
     player.moveSpeed = SCREEN_SIZE * 0.5f;
 
-    player.weaponType = RIFLE;
+    player.weaponType = ROCKET;
     player.shootTimer.total = COOLDOWN_SHOTGUN;
 
     Camera2D camera;
     camera.target = player.pos;
     camera.offset = Vector2Ones * SCREEN_SIZE * 0.5f;
     camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+    camera.zoom = 0.5f;
 
     Projectiles projectiles;
     projectiles.rifle.reserve(128);
@@ -143,29 +149,8 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
-
+        DrawProjectiles(projectiles);
         DrawPlayer(player.pos);
-
-        for (const Projectile& p : projectiles.rifle)
-        {
-            DrawRifle(p.pos);
-        }
-
-        for (const Projectile& p : projectiles.shotgun)
-        {
-            DrawShotgun(p.pos);
-        }
-
-        for (const Projectile& p : projectiles.machineGun)
-        {
-            DrawMachineGun(p.pos);
-        }
-
-        for (const Projectile& p : projectiles.akimbo)
-        {
-            DrawAkimbo(p.pos);
-        }
-
         for (const Obstacle& o : map.obstacles)
         {
             DrawCircleV(o.pos, o.radius, o.color);
@@ -175,6 +160,8 @@ int main()
         //DrawText(TextFormat("mx: %f my: %f", mouse.x, mouse.y), player.pos.x, player.pos.y - 50.0f, 20, BLUE);
         EndMode2D();
         DrawFPS(10, 10);
+        //projectiles.rifle.size();
+        //int  = projectiles.rifle.size() + projectiles.rifle.size() + projectiles.rifle.size() + projectiles.rifle.size() + projectiles.rifle.size();
         DrawText(TextFormat("Bullet count: %i", projectiles.rifle.size()), 10, 30, 20, RED);
         EndDrawing();
     }
