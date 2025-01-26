@@ -49,7 +49,7 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
         }
     }
 
-    for (RocketProjectile& p : projectiles.rocket)
+    for (Projectile& p : projectiles.rocket)
     {
         p.pos += p.vel * dt;
         p.time += dt;
@@ -85,7 +85,7 @@ void PruneProjectiles(Projectiles& projectiles)
         [](Projectile& p) { return p.destroy; }), projectiles.akimbo.end());
 
     projectiles.rocket.erase(std::remove_if(projectiles.rocket.begin(), projectiles.rocket.end(),
-        [](RocketProjectile& p) { return p.destroy; }), projectiles.rocket.end());
+        [](Projectile& p) { return p.destroy; }), projectiles.rocket.end());
 }
 
 void DrawProjectiles(const Projectiles& projectiles)
@@ -110,7 +110,7 @@ void DrawProjectiles(const Projectiles& projectiles)
         DrawAkimbo(p.pos);
     }
 
-    for (const RocketProjectile& p : projectiles.rocket)
+    for (const Projectile& p : projectiles.rocket)
     {
         DrawRocket(p.pos);
     }

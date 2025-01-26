@@ -20,15 +20,6 @@ struct Projectile
 {
 	Vector2 pos = Vector2Zeros;
 	Vector2 vel = Vector2Zeros;
-	float life = 0.0f;
-	bool destroy = false;
-};
-
-// TODO -- Add these to Projectile and only use Projectile
-struct RocketProjectile
-{
-	Vector2 pos = Vector2Zeros;
-	Vector2 vel = Vector2Zeros;
 	float time = 0.0f;
 	bool destroy = false;
 
@@ -42,7 +33,7 @@ struct Projectiles
 	std::vector<Projectile> shotgun;
 	std::vector<Projectile> machineGun;
 	std::vector<Projectile> akimbo;
-	std::vector<RocketProjectile> rocket;
+	std::vector<Projectile> rocket;
 };
 
 inline Projectile ShootRifle(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
@@ -93,9 +84,9 @@ inline std::array< Projectile, 2> ShootAkimbo(Vector2 shooterPosition, float sho
 	return p;
 }
 
-inline RocketProjectile ShootRocket(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
+inline Projectile ShootRocket(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
 {
-	RocketProjectile p;
+	Projectile p;
 	p.pos = shooterPosition + shootDirection * (shooterRadius + RADIUS_RIFLE);
 	p.vel = shootDirection * SPEED_ROCKET;
 	p.launchPos = shooterPosition;

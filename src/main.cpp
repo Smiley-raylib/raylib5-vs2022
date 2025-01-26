@@ -52,7 +52,7 @@ void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& proje
 
         case ROCKET:
         {
-            RocketProjectile rocket = ShootRocket(position, radius, direction);
+            Projectile rocket = ShootRocket(position, radius, direction);
             projectiles.rocket.push_back(rocket);
         }
     }
@@ -90,13 +90,14 @@ int main()
     camera.target = player.pos;
     camera.offset = Vector2Ones * SCREEN_SIZE * 0.5f;
     camera.rotation = 0.0f;
-    camera.zoom = 0.5f;
+    camera.zoom = 0.75f;
 
     Projectiles projectiles;
     projectiles.rifle.reserve(128);
     projectiles.shotgun.reserve(128);
     projectiles.machineGun.reserve(128);
     projectiles.akimbo.reserve(128);
+    projectiles.rocket.reserve(128);
 
     while (!WindowShouldClose())
     {
