@@ -1,9 +1,10 @@
-#include <raylib.h>
-#include "Colors.h"
+#include "Assets.h"
+#include "Constants.h"
+
 #include "Weapons.h"
+#include "Systems.h"
 #include "Steering.h"
 #include "Timer.h"
-#include "Systems.h"
 
 struct Player
 {
@@ -51,12 +52,16 @@ void Shoot(Vector2 position, Vector2 direction, float radius, Projectiles& proje
     }
 }
 
+void DrawPlayer(Vector2 pos)
+{
+    DrawTexCircle(gTexBubble, pos, RADIUS_PLAYER, BLUE);
+}
+
 int main()
 {
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Bubble Arena");
     SetTargetFPS(60);
-
-    Texture2D bubble = LoadTexture("./assets/bubble.png");
+    LoadAssets();
 
     Map map;
     map.obstacles.resize(1024);
@@ -138,26 +143,27 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
-        DrawTextureV(bubble, player.pos, WHITE);
+
+        DrawPlayer(player.pos);
 
         for (const Projectile& p : projectiles.rifle)
         {
-            DrawCircleV(p.pos, RADIUS_RIFLE, RED);
+            DrawRifle(p.pos);
         }
 
         for (const Projectile& p : projectiles.shotgun)
         {
-            DrawCircleV(p.pos, RADIUS_SHOTGUN, GREEN);
+            DrawShotgun(p.pos);
         }
 
         for (const Projectile& p : projectiles.machineGun)
         {
-            DrawCircleV(p.pos, RADIUS_MACHINE_GUN, BLUE);
+            DrawMachineGun(p.pos);
         }
 
         for (const Projectile& p : projectiles.akimbo)
         {
-            DrawCircleV(p.pos, RADIUS_AKIMBO, ORANGE);
+            DrawAkimbo(p.pos);
         }
 
         for (const Obstacle& o : map.obstacles)
@@ -173,7 +179,7 @@ int main()
         EndDrawing();
     }
 
-    UnloadTexture(bubble);
+    UnloadAssets();
     CloseWindow();
     return 0;
 }

@@ -1,5 +1,4 @@
 #pragma once
-#include "Projectiles.h"
 #include "Map.h"
 
 constexpr Rectangle WORLD_REC{ WORLD_MIN, WORLD_MIN, WORLD_MAX * 2.0f, WORLD_MAX * 2.0f };

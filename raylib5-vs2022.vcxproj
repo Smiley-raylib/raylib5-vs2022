@@ -11,15 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Assets.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Assets.h" />
     <ClInclude Include="src\Constants.h" />
-    <ClInclude Include="src\Colors.h" />
     <ClInclude Include="src\Enemies.h" />
     <ClInclude Include="src\Map.h" />
     <ClInclude Include="src\MathExt.h" />
-    <ClInclude Include="src\Projectiles.h" />
     <ClInclude Include="src\Steering.h" />
     <ClInclude Include="src\Systems.h" />
     <ClInclude Include="src\Timer.h" />

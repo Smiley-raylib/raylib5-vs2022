@@ -1,4 +1,6 @@
 #pragma once
+#include <raylib.h>
+#include <array>
 
 constexpr float SCREEN_SIZE = 800.0f;
 constexpr float WORLD_MIN = -2500.0f;
@@ -23,3 +25,34 @@ constexpr float SPEED_SHOTGUN = 500.0f;
 constexpr float SPEED_MACHINE_GUN = 750.0f;
 constexpr float SPEED_AKIMBO = 600.0f;
 constexpr float SPEED_ROCKET_LAUNCHER = 450.0f;
+
+constexpr Color COLOR_RIFLE = RED;
+constexpr Color COLOR_SHOTGUN = GREEN;
+constexpr Color COLOR_MACHINE_GUN = BLUE;
+constexpr Color COLOR_AKIMBO = ORANGE;
+constexpr Color COLOR_ROCKET_LAUNCHER = MAGENTA;
+
+constexpr std::array<Color, 21> COLORS =
+{
+	LIGHTGRAY,
+	GRAY,
+	DARKGRAY,
+	YELLOW,
+	GOLD,
+	ORANGE,
+	PINK,
+	RED,
+	MAROON,
+	GREEN,
+	LIME,
+	DARKGREEN,
+	SKYBLUE,
+	BLUE,
+	DARKBLUE,
+	PURPLE,
+	VIOLET,
+	DARKPURPLE,
+	BEIGE,
+	BROWN,
+	LIGHTGRAY
+};

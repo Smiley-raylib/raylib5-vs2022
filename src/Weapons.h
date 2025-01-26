@@ -1,7 +1,25 @@
 #pragma once
-#include "Constants.h"
-#include "Projectiles.h"
+#include <raylib.h>
+#include "MathExt.h"
 #include <array>
+#include <vector>
+#include "Assets.h"
+// *Must include raylib before raymath cause raylib defines VectorN*
+
+struct Projectile
+{
+	Vector2 pos = Vector2Zeros;
+	Vector2 vel = Vector2Zeros;
+	bool destroy = false;
+};
+
+struct Projectiles
+{
+	std::vector<Projectile> rifle;
+	std::vector<Projectile> shotgun;
+	std::vector<Projectile> machineGun;
+	std::vector<Projectile> akimbo;
+};
 
 enum WeaponType : int
 {
@@ -13,7 +31,7 @@ enum WeaponType : int
 	WEAPON_COUNT
 };
 
-Projectile ShootRifle(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
+inline Projectile ShootRifle(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
 {
 	Projectile p;
 	p.pos = shooterPosition + shootDirection * (shooterRadius + RADIUS_RIFLE);
@@ -21,7 +39,7 @@ Projectile ShootRifle(Vector2 shooterPosition, float shooterRadius, Vector2 shoo
 	return p;
 }
 
-std::array<Projectile, 3> ShootShotgun(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
+inline std::array<Projectile, 3> ShootShotgun(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
 {
 	std::array<Projectile, 3> p;
 
@@ -40,7 +58,7 @@ std::array<Projectile, 3> ShootShotgun(Vector2 shooterPosition, float shooterRad
 	return p;
 }
 
-Projectile ShootMachineGun(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
+inline Projectile ShootMachineGun(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
 {
 	// 50% chance of not shooting exactly in shoot_direction
 	bool miss = (rand() % 4) < 2;
@@ -52,7 +70,7 @@ Projectile ShootMachineGun(Vector2 shooterPosition, float shooterRadius, Vector2
 	return p;
 }
 
-std::array< Projectile, 2> ShootAkimbo(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
+inline std::array< Projectile, 2> ShootAkimbo(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
 {
 	std::array< Projectile, 2> p;
 	p[0].pos = p[1].pos = shooterPosition + shootDirection * (shooterRadius + RADIUS_AKIMBO);
@@ -61,7 +79,7 @@ std::array< Projectile, 2> ShootAkimbo(Vector2 shooterPosition, float shooterRad
 	return p;
 }
 
-float WeaponCooldown(int type)
+inline float WeaponCooldown(int type)
 {
 	switch (type)
 	{
@@ -77,4 +95,32 @@ float WeaponCooldown(int type)
 	case AKIMBO:
 		return COOLDOWN_AKIMBO;
 	}
+}
+
+void DrawTexCircle(Texture2D tex, Vector2 pos, float radius, Color tint = WHITE)
+{
+	Rectangle src, dst;
+	TexRecFromCircle(tex, pos, radius, &src, &dst);
+	DrawTexturePro(tex, src, dst, Vector2Zeros, 0.0f, tint);
+}
+
+void DrawRifle(Vector2 pos)
+{
+	DrawTexCircle(gTexBubble, pos, RADIUS_RIFLE, COLOR_RIFLE);
+}
+
+void DrawShotgun(Vector2 pos)
+{
+	DrawTexCircle(gTexBubble, pos, RADIUS_SHOTGUN, COLOR_SHOTGUN);
+}
+
+
+void DrawMachineGun(Vector2 pos)
+{
+	DrawTexCircle(gTexBubble, pos, RADIUS_MACHINE_GUN, COLOR_MACHINE_GUN);
+}
+
+void DrawAkimbo(Vector2 pos)
+{
+	DrawTexCircle(gTexBubble, pos, RADIUS_AKIMBO, COLOR_AKIMBO);
 }
