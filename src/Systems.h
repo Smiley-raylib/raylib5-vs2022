@@ -8,6 +8,8 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
     for (Projectile& p : projectiles.rifle)
     {
         p.pos += p.vel * dt;
+        p.time += dt;
+        p.destroy |= p.time >= LIFE_RIFLE;
 
         for (const Obstacle& o : map.obstacles)
         {
@@ -19,6 +21,8 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
     for (Projectile& p : projectiles.shotgun)
     {
         p.pos += p.vel * dt;
+        p.time += dt;
+        p.destroy |= p.time >= LIFE_SHOTGUN;
 
         for (const Obstacle& o : map.obstacles)
         {
@@ -30,6 +34,8 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
     for (Projectile& p : projectiles.machineGun)
     {
         p.pos += p.vel * dt;
+        p.time += dt;
+        p.destroy |= p.time >= LIFE_MACHINE_GUN;
 
         for (const Obstacle& o : map.obstacles)
         {
@@ -41,6 +47,8 @@ void UpdateProjectiles(Projectiles& projectiles, const Map& map,  float dt)
     for (Projectile& p : projectiles.akimbo)
     {
         p.pos += p.vel * dt;
+        p.time += dt;
+        p.destroy |= p.time >= LIFE_AKIMBO;
 
         for (const Obstacle& o : map.obstacles)
         {
