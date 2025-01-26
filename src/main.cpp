@@ -80,7 +80,6 @@ int main()
     }
 
     Player player;
-    player.pos = Vector2Ones * SCREEN_SIZE * 0.5f;
     player.moveSpeed = SCREEN_SIZE * 0.5f;
 
     player.weaponType = ROCKET;
@@ -90,7 +89,7 @@ int main()
     camera.target = player.pos;
     camera.offset = Vector2Ones * SCREEN_SIZE * 0.5f;
     camera.rotation = 0.0f;
-    camera.zoom = 0.75f;
+    camera.zoom = 1.0f;
 
     Projectiles projectiles;
     projectiles.rifle.reserve(128);
@@ -103,6 +102,7 @@ int main()
     {
         const float dt = GetFrameTime();
         const Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), camera);
+        const Vector2 mouseDirection = Vector2Normalize(mouse - player.pos);
 
         Vector2 moveDir = Vector2Zeros;
         if (IsKeyDown(KEY_W))
@@ -138,7 +138,6 @@ int main()
         {
             if (IsKeyDown(KEY_SPACE))
             {
-                Vector2 mouseDirection = Vector2Normalize(mouse - player.pos);
                 Reset(player.shootTimer);
                 Shoot(player.pos, mouseDirection, RADIUS_PLAYER, projectiles, player.weaponType);
             }
@@ -146,6 +145,8 @@ int main()
         
         UpdateProjectiles(projectiles, map, dt);
         PruneProjectiles(projectiles);
+
+        
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -155,6 +156,17 @@ int main()
         for (const Obstacle& o : map.obstacles)
         {
             DrawCircleV(o.pos, o.radius, o.color);
+        }
+
+        const float spread = PI / 5.0f;
+        float angle = -spread * 2.0f;
+        float r = 100.0f;
+        for (int i = 0; i < 5; i++)
+        {
+
+            Vector2 dir = Vector2Rotate(mouseDirection * -1.0f, angle) * r;
+            DrawCircleV(player.pos + dir, 20.0f, RED);
+            angle += spread;
         }
 
         // Since everything is relative to the camera, just use world-space UI!

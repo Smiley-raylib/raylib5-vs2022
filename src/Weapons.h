@@ -84,8 +84,22 @@ inline std::array< Projectile, 2> ShootAkimbo(Vector2 shooterPosition, float sho
 	return p;
 }
 
+//inline std::array<Projectile, 5> ShootRocket(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
 inline Projectile ShootRocket(Vector2 shooterPosition, float shooterRadius, Vector2 shootDirection)
 {
+	//std::array< Projectile, 5> p;
+
+	//Vector2 outLeftDir = Vector2Rotate(shootD)
+	const float spread = PI * 2.0f / 5.0f;//(float)p.size();
+	float angle = -spread * 2.0f;
+	float r = 50.0f;
+	for (int i = 0; i < 5; i++)
+	{
+		Vector2 dir = Vector2Rotate(shootDirection, angle) * r;
+		//p[i].launchPos = shooterPosition + ;
+		angle += spread;
+	}
+
 	Projectile p;
 	p.pos = shooterPosition + shootDirection * (shooterRadius + RADIUS_RIFLE);
 	p.vel = shootDirection * SPEED_ROCKET;
