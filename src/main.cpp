@@ -1,9 +1,32 @@
 #include <raylib.h>
 #include <raymath.h>
+#include <vector>
 
 const int SCREEN_SIZE = 800;
 const int TILE_COUNT = 10;
 const int TILE_SIZE = SCREEN_SIZE / TILE_COUNT;
+
+using Grid = int[TILE_COUNT][TILE_COUNT];
+
+struct Cell
+{
+    int row = -1;
+    int col = -1;
+};
+
+std::vector<Cell> Adjacent(Cell cell, Grid grid)
+{
+    std::vector<Cell> adjacent;
+    Cell left = { cell.row, cell.col - 1 };
+    Cell right = { cell.row, cell.col + 1 };
+    Cell up = { cell.row - 1, cell.col };
+    Cell down = { cell.row + 1, cell.col };
+    if (left.col >= 0) adjacent.push_back(left);
+    if (right.col < TILE_COUNT) adjacent.push_back(right);
+    if (up.row >= 0) adjacent.push_back(up);
+    if (down.row < TILE_COUNT) adjacent.push_back(down);
+    return adjacent;
+}
 
 void DrawTile(int row, int col, Color color)
 {
@@ -12,7 +35,7 @@ void DrawTile(int row, int col, Color color)
 
 int main()
 {
-    int tiles[TILE_COUNT][TILE_COUNT] =
+    Grid tiles =
     {
         { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -29,6 +52,8 @@ int main()
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
     SetTargetFPS(60);
 
+    Cell test{ 4, 2 };
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
@@ -42,6 +67,11 @@ int main()
                 DrawTile(row, col, color);
             }
         }
+
+        DrawTile(test.row, test.col, MAGENTA);
+        std::vector<Cell> adjacent = Adjacent(test, tiles);
+        for (Cell adj : adjacent)
+            DrawTile(adj.row, adj.col, BLUE);
 
         EndDrawing();
     }
