@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <vector>
 #include <queue>
+#include <map>
 
 const int SCREEN_SIZE = 800;
 const int TILE_COUNT = 10;
@@ -22,12 +23,30 @@ struct Cell
 {
     int row = -1;
     int col = -1;
-    float cost = 0.0f;
 };
 
 bool operator==(Cell a, Cell b)
 {
     return a.row == b.row && a.col == b.col;
+}
+
+struct Node
+{
+    Cell curr;
+    Cell prev;
+    float cost = 0.0f;
+};
+
+namespace std
+{
+    template<>
+    struct greater<Node>
+    {
+        bool operator()(Node a, Node b)
+        {
+            return a.cost > b.cost;
+        }
+    };
 }
 
 std::vector<Cell> Adjacent(Cell cell, Grid grid)
@@ -70,11 +89,20 @@ float TileCost(int type)
     return tileCosts[type];
 }
 
-std::vector<Cell> FloodFill(Cell start, Cell end, Grid grid, int iterations)
+std::vector<Cell> Dijkstra(Cell start, Cell end, Grid grid, int iterations)
 {
     std::vector<Cell> result;
 
-    bool closed[TILE_COUNT][TILE_COUNT]{};
+    Node nodes[TILE_COUNT][TILE_COUNT];
+    for (int row = 0; row < TILE_COUNT; row++)
+    {
+        for (int col = 0; col < TILE_COUNT; col++)
+        {
+            nodes[row][col].curr = { row, col };
+            nodes[row][col].cost = FLT_MAX;
+        }
+    }
+
     std::queue<Cell> open;
     open.push(start);
 
@@ -95,32 +123,17 @@ std::vector<Cell> FloodFill(Cell start, Cell end, Grid grid, int iterations)
             break;
         }
 
-        // Indicate the cell has been explored to prevent re-exploration
-        closed[front.row][front.col] = true;
-
-        for (Cell adj : Adjacent(front, grid))
-        {
-            bool explored = closed[adj.row][adj.col];
-            if (!explored)
-            {
-                open.push(adj);
-            }
-        }
+        //for (Cell adj : Adjacent(front, grid))
+        //{
+        //    bool explored = closed[adj.row][adj.col];
+        //    if (!explored)
+        //    {
+        //        open.push(adj);
+        //    }
+        //}
     }
 
     return result;
-}
-
-namespace std
-{
-    template<>
-    struct greater<Cell>
-    {
-        bool operator()(Cell a, Cell b)
-        {
-            return a.cost > b.cost;
-        }
-    };
 }
 
 int main()
@@ -151,20 +164,31 @@ int main()
     //    queue.pop();
     //}
 
-    Cell a, b, c;
-    b.cost = 25.0f;
-    a.cost = 100.0f;
-    c.cost = 10.0f;
+    
+    //std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> pq;
+    //pq.push(a);
+    //pq.push(b);
+    //pq.push(c);
+    //while (!pq.empty())
+    //{
+    //    printf("Cell cost: %f\n", pq.top().cost);
+    //    pq.pop();
+    //}
 
-    std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> pq;
-    pq.push(a);
-    pq.push(b);
-    pq.push(c);
-    while (!pq.empty())
-    {
-        printf("Cell cost: %f\n", pq.top().cost);
-        pq.pop();
-    }
+    //Cell a, b, c;
+    //b.row = 2;
+    //a.row = 1;
+    //c.row = 3;
+    //
+    //std::map<float, Cell> map;
+    //map[1.3f] = c;
+    //map[1.2f] = b;
+    //map[1.1f] = a;
+    //
+    //for (std::pair<float, Cell> p : map)
+    //{
+    //    printf("k: %f, v: %i\n", p.first, p.second.row);
+    //}
 
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
     SetTargetFPS(60);
@@ -177,7 +201,7 @@ int main()
 
         Cell start{ 8, 2 }; // bottom-left
         Cell end{ 5, 5 };   // top-right
-        std::vector<Cell> fill = FloodFill(start, end, tiles, iterations);
+        std::vector<Cell> fill = Dijkstra(start, end, tiles, iterations);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
