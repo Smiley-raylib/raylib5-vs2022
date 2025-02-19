@@ -2,7 +2,6 @@
 #include <raymath.h>
 #include <vector>
 #include <queue>
-#include <map>
 
 const int SCREEN_SIZE = 800;
 const int TILE_COUNT = 10;
@@ -50,35 +49,6 @@ struct Node
     float cost = 0.0f;
 };
 
-namespace std
-{
-    template<>
-    struct greater<Node>
-    {
-        bool operator()(Node a, Node b)
-        {
-            return a.cost > b.cost;
-        }
-    };
-}
-
-std::vector<Cell> Adjacent(Cell cell, Grid grid)
-{
-    std::vector<Cell> adjacent;
-    Cell left = { cell.row, cell.col - 1 };
-    Cell right = { cell.row, cell.col + 1 };
-    Cell up = { cell.row - 1, cell.col };
-    Cell down = { cell.row + 1, cell.col };
-
-    if (left.col >= 0) adjacent.push_back(left);
-    if (right.col < TILE_COUNT) adjacent.push_back(right);
-    if (up.row >= 0) adjacent.push_back(up);
-    if (down.row < TILE_COUNT) adjacent.push_back(down);
-    return adjacent;
-}
-
-
-
 void DrawTile(int row, int col, Color color)
 {
     DrawRectangle(TILE_SIZE * col, TILE_SIZE * row, TILE_SIZE, TILE_SIZE, color);
@@ -104,9 +74,40 @@ float TileCost(int type)
     return tileCosts[type];
 }
 
+std::vector<Cell> Adjacent(Cell cell, Grid grid)
+{
+    std::vector<Cell> adjacent;
+    Cell left = { cell.row, cell.col - 1 };
+    Cell right = { cell.row, cell.col + 1 };
+    Cell up = { cell.row - 1, cell.col };
+    Cell down = { cell.row + 1, cell.col };
+
+    if (left.col >= 0) adjacent.push_back(left);
+    if (right.col < TILE_COUNT) adjacent.push_back(right);
+    if (up.row >= 0) adjacent.push_back(up);
+    if (down.row < TILE_COUNT) adjacent.push_back(down);
+    return adjacent;
+}
+
+std::vector<Cell> Retrace(Node nodes[TILE_COUNT][TILE_COUNT], Cell start, Cell end)
+{
+    std::vector<Cell> path;
+    Cell curr = end;
+    Cell prev = nodes[curr.row][curr.col].prev;
+
+    while (prev.row != -1 && prev.col != -1)
+    {
+        path.push_back(curr);
+        curr = prev;
+        prev = nodes[curr.row][curr.col].prev;
+    }
+
+    return path;
+}
+
 std::vector<Cell> Dijkstra(Cell start, Cell end, Grid grid, int iterations)
 {
-    std::vector<Cell> result;
+    std::vector<Cell> searched;
 
     Node nodes[TILE_COUNT][TILE_COUNT];
     for (int row = 0; row < TILE_COUNT; row++)
@@ -136,8 +137,9 @@ std::vector<Cell> Dijkstra(Cell start, Cell end, Grid grid, int iterations)
         // Copy the front of the queue and remove it from the queue
         Cell front = open.top();
         open.pop();
-    
-        result.push_back(front);
+        
+        // Store explored nodes for debug rendering
+        searched.push_back(front);
     
         // Stop searching if we've reached our goal!
         if (front == end)
@@ -161,7 +163,8 @@ std::vector<Cell> Dijkstra(Cell start, Cell end, Grid grid, int iterations)
         }
     }
 
-    return result;
+    // Output the path if we've found one, otherwise output our search so far
+    return found ? Retrace(nodes, start, end) : searched;/*std::vector<Cell>{}*/;
 }
 
 int main()
@@ -179,67 +182,6 @@ int main()
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
         { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
     };
-
-    //std::queue<int> queue;
-    //queue.push(1);
-    //queue.push(2);
-    //queue.push(3);
-    //queue.push(4);
-    //queue.push(5);
-    //while (!queue.empty())
-    //{
-    //    printf("Customer number %i \n", queue.front());
-    //    queue.pop();
-    //}
-
-    //Cell a, b, c;
-    //b.row = 2;
-    //a.row = 1;
-    //c.row = 3;
-    //a.cost = 1.0f;
-    //b.cost = 2.0f;
-    //c.cost = 3.0f;
-    //
-    //std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> pq;
-    //pq.push(a);
-    //pq.push(b);
-    //pq.push(c);
-    //pq.push(c);
-    //pq.push(c);
-    //pq.push(c);
-    //while (!pq.empty())
-    //{
-    //    printf("Cell cost: %f\n", pq.top().cost);
-    //    pq.pop();
-    //}
-
-    // Map WILL NOT work because it only stores values with unique keys, but tiles will have duplicate keys. Enter... MULTI-MAP!!!
-    //Cell a, b, c;
-    //b.row = 2;
-    //a.row = 1;
-    //c.row = 3;
-    //
-    //std::multimap<float, Cell> map
-    //{
-    //    { 1.0f, a },
-    //    { 2.0f, b },
-    //    { 3.0f, c },
-    //    { 3.0f, c },
-    //    { 3.0f, c },
-    //    { 3.0f, c }
-    //};
-    //
-    //printf("Printing map key-value pairs:\n");
-    //for (std::pair<float, Cell> p : map)
-    //    printf("k: %f, v: %i\n", p.first, p.second.row);
-    //
-    //map.erase(map.begin()); // erases cost = 1.0f
-    //map.erase(map.begin()); // erases cost = 2.0f
-    //map.erase(map.begin()); // erases cost = 3.0f
-    //printf("Printing map after removal:\n");
-    //
-    //for (std::pair<float, Cell> p : map)
-    //    printf("k: %f, v: %i\n", p.first, p.second.row);
 
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
     SetTargetFPS(60);
