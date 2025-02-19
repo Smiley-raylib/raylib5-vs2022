@@ -22,7 +22,13 @@ struct Cell
 {
     int row = -1;
     int col = -1;
+    float cost = 0.0f;
 };
+
+bool operator==(Cell a, Cell b)
+{
+    return a.row == b.row && a.col == b.col;
+}
 
 std::vector<Cell> Adjacent(Cell cell, Grid grid)
 {
@@ -31,6 +37,7 @@ std::vector<Cell> Adjacent(Cell cell, Grid grid)
     Cell right = { cell.row, cell.col + 1 };
     Cell up = { cell.row - 1, cell.col };
     Cell down = { cell.row + 1, cell.col };
+
     if (left.col >= 0) adjacent.push_back(left);
     if (right.col < TILE_COUNT) adjacent.push_back(right);
     if (up.row >= 0) adjacent.push_back(up);
@@ -63,10 +70,46 @@ float TileCost(int type)
     return tileCosts[type];
 }
 
-//std::vector<Cell> FloodFill(Cell start, Cell end, Grid grid)
-//{
-//    bool closed[TILE_COUNT][TILE_COUNT];
-//}
+std::vector<Cell> FloodFill(Cell start, Cell end, Grid grid, int iterations)
+{
+    std::vector<Cell> result;
+
+    bool closed[TILE_COUNT][TILE_COUNT]{};
+    std::queue<Cell> open;
+    open.push(start);
+
+    bool found = false;
+    //while (!open.empty())
+    for (int i = 0; i < iterations; i++)
+    {
+        // Copy the front of the queue and remove it from the queue
+        Cell front = open.front();
+        open.pop();
+
+        result.push_back(front);
+
+        // Stop searching if we've reached our goal!
+        if (front == end)
+        {
+            found = true;
+            break;
+        }
+
+        // Indicate the cell has been explored to prevent re-exploration
+        closed[front.row][front.col] = true;
+
+        for (Cell adj : Adjacent(front, grid))
+        {
+            bool explored = closed[adj.row][adj.col];
+            if (!explored)
+            {
+                open.push(adj);
+            }
+        }
+    }
+
+    return result;
+}
 
 int main()
 {
@@ -84,26 +127,30 @@ int main()
         { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
     };
 
-    std::queue<int> queue;
-    queue.push(1);
-    queue.push(2);
-    queue.push(3);
-    queue.push(4);
-    queue.push(5);
-    while (!queue.empty())
-    {
-        printf("Customer number %i \n", queue.front());
-        queue.pop();
-    }
+    //std::queue<int> queue;
+    //queue.push(1);
+    //queue.push(2);
+    //queue.push(3);
+    //queue.push(4);
+    //queue.push(5);
+    //while (!queue.empty())
+    //{
+    //    printf("Customer number %i \n", queue.front());
+    //    queue.pop();
+    //}
 
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
     SetTargetFPS(60);
 
-    Cell test{ 4, 2 };
-
+    int iterations = 0;
     while (!WindowShouldClose())
     {
-        std::vector<Cell> adjacent = Adjacent(test, tiles);
+        if (IsKeyDown(KEY_SPACE))
+            iterations++;
+
+        Cell start{ 8, 2 }; // bottom-left
+        Cell end{ 5, 5 };   // top-right
+        std::vector<Cell> fill = FloodFill(start, end, tiles, iterations);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -117,9 +164,10 @@ int main()
             }
         }
 
-        DrawTile(test.row, test.col, MAGENTA);
-        for (Cell adj : adjacent)
-            DrawTile(adj.row, adj.col, BLUE);
+        for (Cell c : fill)
+            DrawTile(c.row, c.col, MAGENTA);
+        DrawTile(start.row, start.col, RED);
+        DrawTile(end.row, end.col, GREEN);
         EndDrawing();
     }
 
