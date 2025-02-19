@@ -23,11 +23,24 @@ struct Cell
 {
     int row = -1;
     int col = -1;
+    float cost = 0.0f;
 };
 
 bool operator==(Cell a, Cell b)
 {
     return a.row == b.row && a.col == b.col;
+}
+
+namespace std
+{
+    template<>
+    struct greater<Cell>
+    {
+        bool operator()(Cell a, Cell b)
+        {
+            return a.cost > b.cost;
+        }
+    };
 }
 
 struct Node
@@ -63,6 +76,8 @@ std::vector<Cell> Adjacent(Cell cell, Grid grid)
     if (down.row < TILE_COUNT) adjacent.push_back(down);
     return adjacent;
 }
+
+
 
 void DrawTile(int row, int col, Color color)
 {
@@ -103,34 +118,47 @@ std::vector<Cell> Dijkstra(Cell start, Cell end, Grid grid, int iterations)
         }
     }
 
-    std::queue<Cell> open;
+    // Advanced data-structures exercise: implement with multi-map instead of priority-queue!
+    //std::multimap<float, Cell> open;
+    //open.insert({ 0.0f, start });
+    //Cell front = open.begin()->second;
+    //open.erase(open.begin());
+
+    std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> open;
+    start.cost = 0.0f;
     open.push(start);
+    nodes[start.row][start.col].cost = start.cost;
 
     bool found = false;
     //while (!open.empty())
     for (int i = 0; i < iterations; i++)
     {
         // Copy the front of the queue and remove it from the queue
-        Cell front = open.front();
+        Cell front = open.top();
         open.pop();
-
+    
         result.push_back(front);
-
+    
         // Stop searching if we've reached our goal!
         if (front == end)
         {
             found = true;
             break;
         }
+    
+        for (Cell adj : Adjacent(front, grid))
+        {
+            float prevCost = nodes[adj.row][adj.col].cost;
+            float currCost = nodes[front.row][front.col].cost + TileCost(grid[adj.row][adj.col]);
 
-        //for (Cell adj : Adjacent(front, grid))
-        //{
-        //    bool explored = closed[adj.row][adj.col];
-        //    if (!explored)
-        //    {
-        //        open.push(adj);
-        //    }
-        //}
+            if (currCost < prevCost)
+            {
+                adj.cost = currCost;
+                open.push(adj);
+                nodes[adj.row][adj.col].cost = currCost;
+                nodes[adj.row][adj.col].prev = front;
+            }
+        }
     }
 
     return result;
@@ -164,10 +192,20 @@ int main()
     //    queue.pop();
     //}
 
-    
+    //Cell a, b, c;
+    //b.row = 2;
+    //a.row = 1;
+    //c.row = 3;
+    //a.cost = 1.0f;
+    //b.cost = 2.0f;
+    //c.cost = 3.0f;
+    //
     //std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> pq;
     //pq.push(a);
     //pq.push(b);
+    //pq.push(c);
+    //pq.push(c);
+    //pq.push(c);
     //pq.push(c);
     //while (!pq.empty())
     //{
@@ -175,20 +213,33 @@ int main()
     //    pq.pop();
     //}
 
+    // Map WILL NOT work because it only stores values with unique keys, but tiles will have duplicate keys. Enter... MULTI-MAP!!!
     //Cell a, b, c;
     //b.row = 2;
     //a.row = 1;
     //c.row = 3;
     //
-    //std::map<float, Cell> map;
-    //map[1.3f] = c;
-    //map[1.2f] = b;
-    //map[1.1f] = a;
+    //std::multimap<float, Cell> map
+    //{
+    //    { 1.0f, a },
+    //    { 2.0f, b },
+    //    { 3.0f, c },
+    //    { 3.0f, c },
+    //    { 3.0f, c },
+    //    { 3.0f, c }
+    //};
+    //
+    //printf("Printing map key-value pairs:\n");
+    //for (std::pair<float, Cell> p : map)
+    //    printf("k: %f, v: %i\n", p.first, p.second.row);
+    //
+    //map.erase(map.begin()); // erases cost = 1.0f
+    //map.erase(map.begin()); // erases cost = 2.0f
+    //map.erase(map.begin()); // erases cost = 3.0f
+    //printf("Printing map after removal:\n");
     //
     //for (std::pair<float, Cell> p : map)
-    //{
     //    printf("k: %f, v: %i\n", p.first, p.second.row);
-    //}
 
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
     SetTargetFPS(60);
@@ -199,8 +250,11 @@ int main()
         if (IsKeyDown(KEY_SPACE))
             iterations++;
 
-        Cell start{ 8, 2 }; // bottom-left
-        Cell end{ 5, 5 };   // top-right
+        if (IsKeyDown(KEY_LEFT_SHIFT))
+            iterations--;
+
+        Cell start{ 8, 2 };
+        Cell end{ 2, 8 };
         std::vector<Cell> fill = Dijkstra(start, end, tiles, iterations);
 
         BeginDrawing();
