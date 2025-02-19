@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <vector>
+#include <queue>
 
 const int SCREEN_SIZE = 800;
 const int TILE_COUNT = 10;
@@ -52,6 +53,21 @@ Color TileColor(int type)
     return tileColors[type];
 }
 
+float TileCost(int type)
+{
+    float tileCosts[TILE_TYPE_COUNT];
+    tileCosts[AIR] = 1.0f;
+    tileCosts[ROCK] = 100.0f;
+    tileCosts[WATER] = 25.0f;
+    tileCosts[GRASS] = 10.0f;
+    return tileCosts[type];
+}
+
+//std::vector<Cell> FloodFill(Cell start, Cell end, Grid grid)
+//{
+//    bool closed[TILE_COUNT][TILE_COUNT];
+//}
+
 int main()
 {
     Grid tiles =
@@ -67,6 +83,18 @@ int main()
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
         { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
     };
+
+    std::queue<int> queue;
+    queue.push(1);
+    queue.push(2);
+    queue.push(3);
+    queue.push(4);
+    queue.push(5);
+    while (!queue.empty())
+    {
+        printf("Customer number %i \n", queue.front());
+        queue.pop();
+    }
 
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
     SetTargetFPS(60);
