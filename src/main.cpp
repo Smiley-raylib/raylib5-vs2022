@@ -119,19 +119,13 @@ std::vector<Cell> Dijkstra(Cell start, Cell end, Grid grid, int iterations)
         }
     }
 
-    // Advanced data-structures exercise: implement with multi-map instead of priority-queue!
-    //std::multimap<float, Cell> open;
-    //open.insert({ 0.0f, start });
-    //Cell front = open.begin()->second;
-    //open.erase(open.begin());
-
     std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> open;
     start.cost = 0.0f;
     open.push(start);
     nodes[start.row][start.col].cost = start.cost;
 
     bool found = false;
-    //while (!open.empty())
+    //while (!open.empty()) <-- Replace for-loop with this to make this search complete automatically!
     for (int i = 0; i < iterations; i++)
     {
         // Copy the front of the queue and remove it from the queue
@@ -183,7 +177,7 @@ int main()
         { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
     };
 
-    InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
+    InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Dijkstra's Algorithm");
     SetTargetFPS(60);
 
     int iterations = 0;
@@ -197,7 +191,7 @@ int main()
 
         Cell start{ 8, 2 };
         Cell end{ 2, 8 };
-        std::vector<Cell> fill = Dijkstra(start, end, tiles, iterations);
+        std::vector<Cell> path = Dijkstra(start, end, tiles, iterations);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -211,8 +205,8 @@ int main()
             }
         }
 
-        for (Cell c : fill)
-            DrawTile(c.row, c.col, MAGENTA);
+        for (Cell cell : path)
+            DrawTile(cell.row, cell.col, MAGENTA);
         DrawTile(start.row, start.col, RED);
         DrawTile(end.row, end.col, GREEN);
         EndDrawing();
