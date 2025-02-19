@@ -111,6 +111,18 @@ std::vector<Cell> FloodFill(Cell start, Cell end, Grid grid, int iterations)
     return result;
 }
 
+namespace std
+{
+    template<>
+    struct greater<Cell>
+    {
+        bool operator()(Cell a, Cell b)
+        {
+            return a.cost > b.cost;
+        }
+    };
+}
+
 int main()
 {
     Grid tiles =
@@ -139,14 +151,18 @@ int main()
     //    queue.pop();
     //}
 
-    std::priority_queue<int, std::vector<int>, std::greater<int>> pq;
-    pq.push(6);
-    pq.push(4);
-    pq.push(7);
-    pq.push(3);
+    Cell a, b, c;
+    b.cost = 25.0f;
+    a.cost = 100.0f;
+    c.cost = 10.0f;
+
+    std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> pq;
+    pq.push(a);
+    pq.push(b);
+    pq.push(c);
     while (!pq.empty())
     {
-        printf("Customer number %i \n", pq.top());
+        printf("Cell cost: %f\n", pq.top().cost);
         pq.pop();
     }
 
