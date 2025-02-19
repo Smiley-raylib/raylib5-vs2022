@@ -8,6 +8,15 @@ const int TILE_SIZE = SCREEN_SIZE / TILE_COUNT;
 
 using Grid = int[TILE_COUNT][TILE_COUNT];
 
+enum TileType
+{
+    AIR,
+    ROCK,
+    WATER,
+    GRASS,
+    TILE_TYPE_COUNT
+};
+
 struct Cell
 {
     int row = -1;
@@ -33,6 +42,16 @@ void DrawTile(int row, int col, Color color)
     DrawRectangle(TILE_SIZE * col, TILE_SIZE * row, TILE_SIZE, TILE_SIZE, color);
 }
 
+Color TileColor(int type)
+{
+    Color tileColors[TILE_TYPE_COUNT];
+    tileColors[AIR] = WHITE;
+    tileColors[ROCK] = GRAY;
+    tileColors[WATER] = SKYBLUE;
+    tileColors[GRASS] = LIME;
+    return tileColors[type];
+}
+
 int main()
 {
     Grid tiles =
@@ -41,10 +60,10 @@ int main()
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-        { 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 },
-        { 1, 0, 0, 1, 0, 1, 1, 1, 0, 1 },
-        { 1, 0, 0, 0, 0, 0, 1, 0, 0, 1 },
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 2, 2, 2, 2, 0, 0, 1 },
+        { 1, 0, 0, 3, 3, 3, 3, 0, 0, 1 },
+        { 1, 0, 0, 3, 0, 0, 3, 0, 0, 1 },
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
         { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
     };
@@ -56,23 +75,23 @@ int main()
 
     while (!WindowShouldClose())
     {
+        std::vector<Cell> adjacent = Adjacent(test, tiles);
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
-
         for (int row = 0; row < TILE_COUNT; row++)
         {
             for (int col = 0; col < TILE_COUNT; col++)
             {
-                Color color = tiles[row][col] == 1 ? GRAY : WHITE;
+                int type = tiles[row][col];
+                Color color = TileColor(type);
                 DrawTile(row, col, color);
             }
         }
 
         DrawTile(test.row, test.col, MAGENTA);
-        std::vector<Cell> adjacent = Adjacent(test, tiles);
         for (Cell adj : adjacent)
             DrawTile(adj.row, adj.col, BLUE);
-
         EndDrawing();
     }
 
