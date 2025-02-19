@@ -139,6 +139,17 @@ int main()
     //    queue.pop();
     //}
 
+    std::priority_queue<int, std::vector<int>, std::greater<int>> pq;
+    pq.push(6);
+    pq.push(4);
+    pq.push(7);
+    pq.push(3);
+    while (!pq.empty())
+    {
+        printf("Customer number %i \n", pq.top());
+        pq.pop();
+    }
+
     InitWindow(SCREEN_SIZE, SCREEN_SIZE, "Game");
     SetTargetFPS(60);
 
